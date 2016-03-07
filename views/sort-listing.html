@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{{ title }}</title>
+</head>
+<body>
+<header>
+<h2>Check listing in {{ city | capitalize }}</h2>
+	<a href="/main">Home</a>
+	<a href="/add-listing"><h2>Crear Anuncio</h2></a>
+</header>
+<section>
+
+{% for dat in data %}
+
+	<li> <a href="/city/{{ city }}/{{ dat.uuid }}">  {{ dat.title | capitalize }} </a> | {{ dat.description | capitalize }} | Fecha de Creación : {{ dat.createdOn | date('jS \o\f F') }} </li>
+		
+	
+{% endfor%}
+</section>
+<footer></footer>
+
+</body>
+</html>

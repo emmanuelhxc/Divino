@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title> {{ title }}</title>
+</head>
+<body>
+<header>
+	<a href="/main">Home</a>
+</header>
+<section>
+	<form method="POST" action="/add-to-do">
+	<p>
+	<input  name="title" type="text" placeholder="Nombre del anuncio"  /></p>
+	<p>
+	<textarea name="description" placeholder="Descripción del anuncio"></textarea>
+	</p>
+	<p>
+	<input  name="address" type="text" placeholder="Dirección"  /></p>
+	<p>
+	<select name="city">
+		<option value="-1" selected="selected">Selecciona</option>
+		{% for d in profiles %}
+  		  		<option value="{{ d.uuid }}">{{ d.profilename }}</option>
+		{% endfor %}
+	</select>
+	</p>
+	<p>
+	<button type="submit">Crear</button>	
+	</p>
+</form>
+</section>
+<footer></footer>
+
+
+</body>
+</html>

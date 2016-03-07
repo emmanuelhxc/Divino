@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{{ title }}</title>
+</head>
+<body>
+<header>
+<h2> Usuario </h2>
+	<a href="/main">Home</a>
+	<a href="/add-listing"><h2>Crear Anuncio</h2></a>
+</header>
+<section>
+
+
+	<p>
+	{{user.displayName}}
+	</p>
+	{{user.email}}
+	</p>
+	<p>
+	Miembro desde {{user.createdOn | date('Y-m-d')}}
+	</p>
+	<p>
+	Anuncios Creados por este Usuario
+	<br/>	
+	<ul>	
+		{% for post in list %}
+
+		<li><a href="/city/{{post.city.name}}/{{post.uuid}}"> {{post.title}} en {{post.city.name}}</a>  </li>
+
+		{% endfor%}
+	</ul>
+</p>
+
+
+</section>
+<footer></footer>
+
+</body>
+</html>

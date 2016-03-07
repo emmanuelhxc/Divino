@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{{title }}</title>
+
+	<link rel="stylesheet" type="text/css" href="../static/styles.css">
+
+</head>
+<body>
+	<header>
+		<h1>Welcome to | {{ title }}</h1>	
+	</header>
+<section>
+
+
+	<a href="/add-listing"><h2>Crear Anuncio</h2></a>
+	<a href="/add-city"><h2>Agregar Ciudad</h2></a>
+
+
+	<h2>Cities:</h2>
+
+	<ul>
+		{% for d in data %}
+		  <li{% if loop.first %} class="first"{% endif %}>
+		  <a href="/city/{{ d.name }}"> {{ d.name }}</a><br/>
+
+		  </li>
+		{% endfor %}
+	</ul>
+
+</section>
+
+<footer>
+	
+</footer>
+
+</body>
+</html>

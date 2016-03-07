@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{{ title }}</title>
+</head>
+<body>
+<header>
+<h2>Check {{ titleadd | capitalize }}</h2>
+	<a href="/main">Home</a>
+	<a href="/add-listing"><h2>Crear Anuncio</h2></a>
+	<a href="/city/{{city}}"><h2>{{ city }}</h2></a>
+</header>
+<section>
+
+<form method="POST" action="/{{data.uuid}}/update">
+	<p>
+	Dirección: {{ data.address }}
+	</p>
+	<textarea name="description" placeholder="Descripción del anuncio">{{ data.description }}</textarea>
+	</p>
+	<p>
+	<button type="submit">Update Description</button>	
+	</p>
+	<p>
+	{{ city }}
+	</p>
+	<p>
+		Creado Por: <a href="/users/{{user.uuid}}"> {{user.displayName}} </a> | Fecha de Creación: {{data.createdOn | date('Y-m-d')}}
+	</p>
+	
+</form>
+<form method="POST" action="/{{data.uuid}}/remove">
+<p>
+	<button type="submit">Remove Listing</button>	
+</p>
+</form>
+</section>
+<footer></footer>
+
+</body>
+</html>
