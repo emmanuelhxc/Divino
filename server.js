@@ -23,6 +23,7 @@ var userSchema = Schema({
 	password: String,
  	createdOn: {type:Date, default: new Date()},
  	profile: {type:Schema.Types.ObjectId, ref:'Profile'},
+ 	color: String,
 	uuid : {type: String, default: uuid.v4}
 })
 
