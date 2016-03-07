@@ -834,6 +834,6 @@ app.listen(3000, function () {
  // Cities.collection.remove();
  //Profile.collection.remove();
 
-	instalador()
+	// instalador()
 	console.log('Example app listening on port 3000! ' + new Date())
 })
