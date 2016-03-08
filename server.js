@@ -113,7 +113,7 @@ app.use( flash() )
 // Configurar de swig!
 app.engine('html', swig.renderFile)
 app.set('view engine', 'html')
-app.set('views', __dirname + '/views')
+app.set('/views', __dirname + '/views')
 
 // Configurar cache
 app.set('view cache', false)
@@ -204,55 +204,105 @@ app.get('/',function (req, res) {
 	// .populate('createdBy')
 	// .populate('city')
 	// .exec(function(err,list){
-		if(!res.locals.user)
+	if(!res.locals.user)
 	{
 		res.redirect('/login')
 	}	
 	else{
 
-		Appointment.find({ createdBy: res.locals.user})
-		.populate('createdBy')
-		.populate('customer')
-		.exec(function(err,app){
+		if(res.locals.user.profile === 2)
+		{
+			Appointment.find({ createdBy: res.locals.user})
+			.populate('createdBy')
+			.populate('customer')
+			.exec(function(err,app){
 
-				var citas = []
+					var citas = []
 
-				var cita ={
-					'title': String,
-					'start': Date,
-					'allDay': Boolean,
-					'className': String,
-				}
-				
-				 app.forEach(function(appo){
-
+					var cita ={
+						'title': String,
+						'start': Date,
+						'allDay': Boolean,
+						'className': String,
+					}
 					
-				 	// citas.push({ title: appo.title, start: appo.date , allDay: false, className : 'bgm-cyan'})
+					 app.forEach(function(appo){
 
-				 	var myObj = new Object();
+						
+					 	// citas.push({ title: appo.title, start: appo.date , allDay: false, className : 'bgm-cyan'})
 
-				 	myObj.title = appo.title,
-				 	// myObj.start = new Date(appo.date).toDateString(),
-				 	myObj.start = appo.date.toDateString(),
-				 	myObj.allDay = false,
-				 	myObj.className = 'bgm-cyan'
+					 	var myObj = new Object();
+
+					 	myObj.title = appo.title,
+					 	// myObj.start = new Date(appo.date).toDateString(),
+					 	myObj.start = appo.date.toDateString(),
+					 	myObj.allDay = false,
+					 	myObj.className = 'bgm-cyan'
 
 
-				 	citas.push(myObj)
-	            
-				  })
+					 	citas.push(myObj)
+		            
+					  })
 
-				// var json = JSON.stringify(citas);
-				// console.log(citas)
+					// var json = JSON.stringify(citas);
+					// console.log(citas)
 
-				res.render('index',{
+					res.render('/index',{
 
-				user: res.locals.user,
-				app: app,
-				dates: citas
+					user: res.locals.user,
+					app: app,
+					dates: citas
+				})
+
 			})
+		}
+		else
+		{
+			console.log('si')
+			Appointment.find({})
+			.populate('createdBy')
+			.populate('customer')
+			.exec(function(err,app){
 
-		})
+					var citas = []
+
+					var cita ={
+						'title': String,
+						'start': Date,
+						'allDay': Boolean,
+						'className': String,
+					}
+					
+					 app.forEach(function(appo){
+
+						
+					 	// citas.push({ title: appo.title, start: appo.date , allDay: false, className : 'bgm-cyan'})
+
+					 	var myObj = new Object();
+
+					 	myObj.title = appo.title,
+					 	// myObj.start = new Date(appo.date).toDateString(),
+					 	myObj.start = appo.date.toDateString(),
+					 	myObj.allDay = false,
+					 	myObj.className = 'bgm-cyan'
+
+
+					 	citas.push(myObj)
+		            
+					  })
+
+					// var json = JSON.stringify(citas);
+					 console.log(citas)
+
+					res.render('index',{
+
+					user: res.locals.user,
+					app: app,
+					dates: citas
+				})
+
+			})
+		}
 	}
 })
 
@@ -724,6 +774,56 @@ app.post('/add-appointment',function(req,res){
 	}
 })
 
+app.get('/addtat',function(req,res){
+	
+	console.log(res.locals.user.profile.profilecode != 1)
+	if(!res.locals.user || res.locals.user.profile.profilecode != 1 )
+	{
+		res.redirect('/')
+	}
+	else
+	{
+		res.render('addtat')
+	}
+})
+
+app.post('/addtat',function(req,res){
+	if(!res.locals.user)
+	{
+		res.redirect('/login')
+	}
+	else
+	{
+		Profile.find({profilecode: 2},function(err,doc){
+			if(err)
+			{
+				return res.send(500,'Internal Server Error');
+			}
+
+			bcrypt.hash(req.params.password, null/* Salt */, null, function(err, hashedPassword) {
+				if(err){
+					return res.send(500, 'Internal Server Error')
+				}
+			
+				User.create({
+					username: req.params.userName,
+					password: hashedPassword,
+					displayName: req.params.displayName,
+					profile: doc,
+					email: req.params.mail,
+				}, function(err, doc){
+					if(err){
+						return res.send(500, 'Internal Server Error')
+					}
+				}) 		
+			})
+		})	
+	}
+})
+
+
+
+
 function instalador()
 {
 	Profile.create({
@@ -812,10 +912,6 @@ function instalador()
 				}
 
 			})
-
-
-
-
 
 }
 

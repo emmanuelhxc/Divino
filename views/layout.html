@@ -112,13 +112,10 @@
             <aside id="sidebar" class="sidebar c-overflow">
                
                 <ul class="main-menu">
-                
-                 
                 {% if user %}
-                 <!-- <li><a href="/add-listing"><i class="zmdi zmdi-home"></i> Crear Anuncio </a></li> -->
                  	{% if user.profile.profilecode === 1 %}
 		             	<li>
-		             		<!-- <a href="/add-city"><i class="zmdi zmdi-city-alt zmdi-hc-fw"></i> Crear Cita</a> -->
+		             		<a href="/addtat"><i class="zmdi zmdi-brush zmdi-hc-fw"></i>Agregar Tatuador</a>
 		             	</li>
                  	{% endif %}
                  	<li>
@@ -181,7 +178,7 @@
                     <circle class="plc-path" cx="50" cy="50" r="20" />
                 </svg>
 
-                <p>Please wait...</p>
+                <p>Cargando...</p>
             </div>
         </div>
         
