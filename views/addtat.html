@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 
-{% block csslib %}
+        <!-- {% block csslib %} -->
         <!-- Vendor CSS -->
         <link href="/vendors/bower_components/animate.css/animate.min.css" rel="stylesheet">
         <link href="/vendors/bower_components/bootstrap-sweetalert/lib/sweet-alert.css" rel="stylesheet">
@@ -23,7 +23,7 @@
 <link href="/vendors/farbtastic/farbtastic.css" rel="stylesheet">
 <link href="/vendors/bower_components/chosen/chosen.min.css" rel="stylesheet">
 <link href="/vendors/summernote/dist/summernote.css" rel="stylesheet"> -->
-{% endblock %}
+<!-- {% endblock %} -->
 
 {% block content %}
 <div class="container">
@@ -33,7 +33,7 @@
         </div>
         
         <div class="card-body card-padding">
-            <form  method="POST" action="add-appointment">
+            <form  method="POST" action="addtat">
                 <p class="c-black f-500">Datos del tatuador</p>
                 <div class="col-sm-12">
                      <div class="input-group fg-float m-b-30">
@@ -80,7 +80,7 @@
     </div>
 </div>
 
-{% block jslib %}
+<!-- {% block jslib %} -->
     
     <script src="/vendors/bower_components/jquery/dist/jquery.min.js"></script>
     <script src="/vendors/bower_components/autosize/dist/autosize.min.js"></script>
@@ -106,7 +106,7 @@
 
     <script src="/js/functions.js"></script>
 
-{% endblock %}
+<!-- {% endblock %} -->
 
 
 <script type="text/javascript">
