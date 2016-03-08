@@ -209,9 +209,11 @@ app.get('/',function (req, res) {
 		res.redirect('/login')
 	}	
 	else{
-
-		if(res.locals.user.profile === 2)
+		
+		if(res.locals.user.profile.profilecode === 2)
 		{
+			console.log('entro')
+
 			Appointment.find({ createdBy: res.locals.user})
 			.populate('createdBy')
 			.populate('customer')
@@ -247,7 +249,7 @@ app.get('/',function (req, res) {
 					// var json = JSON.stringify(citas);
 					// console.log(citas)
 
-					res.render('/index',{
+					res.render('index',{
 
 					user: res.locals.user,
 					app: app,
@@ -258,7 +260,7 @@ app.get('/',function (req, res) {
 		}
 		else
 		{
-			console.log('si')
+			
 			Appointment.find({})
 			.populate('createdBy')
 			.populate('customer')
@@ -275,13 +277,9 @@ app.get('/',function (req, res) {
 					
 					 app.forEach(function(appo){
 
-						
-					 	// citas.push({ title: appo.title, start: appo.date , allDay: false, className : 'bgm-cyan'})
-
-					 	var myObj = new Object();
+						var myObj = new Object();
 
 					 	myObj.title = appo.title,
-					 	// myObj.start = new Date(appo.date).toDateString(),
 					 	myObj.start = appo.date.toDateString(),
 					 	myObj.allDay = false,
 					 	myObj.className = 'bgm-cyan'
@@ -291,8 +289,7 @@ app.get('/',function (req, res) {
 		            
 					  })
 
-					// var json = JSON.stringify(citas);
-					 console.log(citas)
+					
 
 					res.render('index',{
 
@@ -713,8 +710,44 @@ app.get('/add-appointment',function(req,res){
 	}
 	else
 	{
+		if(res.locals.user.profile.profilecode == 1)
+		{
+			
+			Profile.findOne({profilecode: 2},function(err,profile){
+
+				if(err)
+				{
+					return res.send(500,'Internal Server Error');
+				}
+
+				if(!profile)
+				{
+					return res.send(400,'Not Found');
+				}
+
+				
+				User.find({profile : profile},function(err,users){
+
+					if(err)
+					{
+						return res.send(500,'Internal Server Error');
+					}
+					if(!users)
+					{
+						return res.send(404, 'Not found')
+					}
+					console.log(users)
+					
+					res.render('appointment',{
+						users:users
+					})
+				})
+			})
+		}
+		else
+		{
 		res.render('appointment')
-	
+		}
 	}
 })
 
@@ -739,36 +772,58 @@ app.post('/add-appointment',function(req,res){
 			{
 				return res.send(500,'Internal Server Error');
 			}
-			
-			// var dates = new Date(req.body.date)
+			if(res.locals.user.profile.profilecode == 2)
+			{
 
-			// console.log(dates.getDay())
+				Appointment.create({
 
-			// console.log(dates)
+					createdBy: res.locals.user,
+					title: req.body.title,
+					description: req.body.description,
+					customer: customer,
+					status: res.locals.active,
+					// imgurl: String,
+					date: parseDate(req.body.date),
+					hour: req.body.time,
+					price: req.body.price,
+					advancepay: req.body.advancepay
+					
+					
+				},function(err,doc){
+						if(err)
+						{
+							return res.send(500,'Internal Server Error');
+						}
+					res.redirect('/')
+				})
 
-			Appointment.create({
+			}
+			else
+			{
+				Appointment.create({
 
-				createdBy: res.locals.user,
-				title: req.body.title,
-				description: req.body.description,
-				customer: customer,
-				status: res.locals.active,
-				// imgurl: String,
-				date: parseDate(req.body.date),
-				hour: req.body.time,
-				price: req.body.price,
-				advancepay: req.body.advancepay
-				
-				
-			},function(err,doc){
-					if(err)
-					{
-						return res.send(500,'Internal Server Error');
-					}
-				res.redirect('/')
-			})
+					createdBy: req.body.tattooer,
+					title: req.body.title,
+					description: req.body.description,
+					customer: customer,
+					status: res.locals.active,
+					// imgurl: String,
+					date: parseDate(req.body.date),
+					hour: req.body.time,
+					price: req.body.price,
+					advancepay: req.body.advancepay
+					
+					
+				},function(err,doc){
+						if(err)
+						{
+							return res.send(500,'Internal Server Error');
+						}
+					res.redirect('/')
+				})
 
 
+			}
 
 		})
 	}
@@ -783,6 +838,7 @@ app.get('/addtat',function(req,res){
 	}
 	else
 	{
+
 		res.render('addtat')
 	}
 })
@@ -794,27 +850,31 @@ app.post('/addtat',function(req,res){
 	}
 	else
 	{
-		Profile.find({profilecode: 2},function(err,doc){
+		Profile.findOne({profilecode: 2},function(err,doc){
 			if(err)
 			{
 				return res.send(500,'Internal Server Error');
 			}
+			if(!doc){
+				return res.send(400,'Not Found');	
+			}
 
-			bcrypt.hash(req.params.password, null/* Salt */, null, function(err, hashedPassword) {
+			bcrypt.hash(req.body.password, null/* Salt */, null, function(err, hashedPassword) {
 				if(err){
 					return res.send(500, 'Internal Server Error')
 				}
-			
+				
 				User.create({
-					username: req.params.userName,
+					username: req.body.userName,
 					password: hashedPassword,
-					displayName: req.params.displayName,
+					displayName: req.body.displayName,
 					profile: doc,
-					email: req.params.mail,
-				}, function(err, doc){
+					email: req.body.mail,
+				}, function(err, usr){
 					if(err){
 						return res.send(500, 'Internal Server Error')
 					}
+					res.redirect('/')
 				}) 		
 			})
 		})	
