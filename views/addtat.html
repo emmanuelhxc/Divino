@@ -1,35 +1,8 @@
 {% extends 'layout.html' %}
-        <meta charset="utf-8"> 
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-
-        <!-- {% block csslib %} -->
-        <link href="/vendors/bower_components/fullcalendar/dist/fullcalendar.min.css" rel="stylesheet">
-        <link href="/vendors/bower_components/animate.css/animate.min.css" rel="stylesheet">
-        <link href="/vendors/bower_components/bootstrap-sweetalert/lib/sweet-alert.css" rel="stylesheet">
-        <link href="/vendors/bower_components/material-design-iconic-font/dist/css/material-design-iconic-font.min.css" rel="stylesheet">
-        <link href="/vendors/bower_components/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.min.css" rel="stylesheet">
-        <link href="/vendors/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
-        <link href="/vendors/bower_components/fullcalendar/dist/fullcalendar.min.css" rel="stylesheet">    
-
-            
-        <!-- CSS -->
-        <link href="/css/app.min.1.css" rel="stylesheet">
-        <link href="/css/app.min.2.css" rel="stylesheet">
-
-
-<!-- <link href="/vendors/bower_components/animate.css/animate.min.css" rel="stylesheet">
-<link href="/vendors/bower_components/bootstrap-sweetalert/lib/sweet-alert.css" rel="stylesheet">
-<link href="/vendors/bower_components/material-design-iconic-font/dist/css/material-design-iconic-font.min.css" rel="stylesheet">
-
-<link href="/vendors/bower_components/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.min.css" rel="stylesheet">        
+       
 <link href="/vendors/bower_components/bootstrap-select/dist/css/bootstrap-select.css" rel="stylesheet">
-<link href="/vendors/bower_components/nouislider/distribute/jquery.nouislider.min.css" rel="stylesheet">
-<link href="/vendors/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
-<link href="/vendors/farbtastic/farbtastic.css" rel="stylesheet">
-<link href="/vendors/bower_components/chosen/chosen.min.css" rel="stylesheet">
-<link href="/vendors/summernote/dist/summernote.css" rel="stylesheet"> -->
-<!-- {% endblock %} -->
+<link href="/css/app.min.1.css" rel="stylesheet">
+<link href="/css/app.min.2.css" rel="stylesheet">
 
 {% block content %}
 <div class="container">
@@ -79,39 +52,25 @@
                     </div>
                 </div> 
                
-                    
+                
                     <button class="btn btn-info" type="submit">Crear</button>
                     <button class="btn btn-link" id="btn-cancel">Cancelar</button>
+
+                  
             </form>
         </div>
     </div>
 </div>
 
 <!-- {% block jslib %} -->
-    
     <script src="/vendors/bower_components/jquery/dist/jquery.min.js"></script>
     <script src="/vendors/bower_components/autosize/dist/autosize.min.js"></script>
-
+    <script src="/vendors/bower_components/moment/min/moment.min.js"></script>
+    
     <script src="/vendors/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 
-    <script src="/vendors/bower_components/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.concat.min.js"></script>
-    <script src="/vendors/bower_components/Waves/dist/waves.min.js"></script>
-    <script src="/vendors/bootstrap-growl/bootstrap-growl.min.js"></script>
-    <script src="/vendors/bower_components/bootstrap-sweetalert/lib/sweet-alert.min.js"></script>
-
-    <script src="/vendors/bower_components/moment/min/moment.min.js"></script>
     <script src="/vendors/bower_components/bootstrap-select/dist/js/bootstrap-select.js"></script>
-    <script src="/vendors/bower_components/nouislider/distribute/jquery.nouislider.all.min.js"></script>
-    <script src="/vendors/bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
-    <script src="/vendors/bower_components/typeahead.js/dist/typeahead.bundle.min.js"></script>
-    <script src="/vendors/summernote/dist/summernote-updated.min.js"></script>
-
-    <script src="/vendors/bower_components/chosen/chosen.jquery.min.js"></script>
-    <script src="/vendors/fileinput/fileinput.min.js"></script>
-    <script src="/vendors/input-mask/input-mask.min.js"></script>
-    <script src="/vendors/farbtastic/farbtastic.min.js"></script>
-
-    <script src="/js/functions.js"></script>
+    
 
 <!-- {% endblock %} -->
 

@@ -4,6 +4,25 @@ var mongoose = require('mongoose')
 var bodyParser = require('body-parser')
 var uuid = require('uuid')
 var bcrypt = require('bcrypt-nodejs')
+var multer = require('multer')
+
+var storage = multer.diskStorage({
+	destination: function (req, file, cb) {
+    	cb(null, 'public/uploads/')
+  	},
+  	filename: function (req, file, cb) {
+    	cb(null, Date.now() + '.jpg') 
+  	},
+  	onFileUploadStart: function (file) {
+  		console.log(file.fieldname + ' is starting ...')
+	},
+	limits:{fileSize: 10000000, files:1}
+})
+
+
+
+var upload = multer({storage:storage})
+
 
 var session = require('express-session')
 var MongoStore = require('express-session-mongo')
@@ -11,8 +30,7 @@ var flash = require('flash')
 
 var Schema = mongoose.Schema
 
-
-mongoose.connect('mongodb://localhost/base-divino')
+mongoose.connect('mongodb://localhost/divinodba')
 var SchemaTypes = mongoose.Schema.Types
 
 // Declara tus modelos en este espacio
@@ -59,12 +77,14 @@ var appointmentSchema = Schema({
 	createdBy: {type:Schema.Types.ObjectId, ref:'User'},
 	modifiedBy: {type:Schema.Types.ObjectId, ref:'User'},
 	createdOn: {type:Date, default: new Date()},
-	date: Date,
-	hour: String,
+	dateStart: Date,
+	dateEnd: Date,
 	customer: {type:Schema.Types.ObjectId, ref:'Customer'},
 	modifiedOn: Date,
 	price: Number,
 	advancepay: Number,
+	typePay: Number,
+	comi: Number,
 	status: {type:Schema.Types.ObjectId, ref:'Status'},
 	uuid: {type: String, default: uuid.v4}
 
@@ -83,7 +103,9 @@ var customerSchema = Schema({
 
 var Customer = mongoose.model('Customer', customerSchema)
 
+var scheduler = Schema({
 
+})
 
 var citySchema = Schema({
 	name: String,
@@ -124,12 +146,14 @@ app.use( bodyParser.urlencoded({ extended:false }) )
 
 // Adds static assets
 app.use('/vendors', express.static('public/vendors/'));
-app.use('/css', express.static('public/css'));
-app.use('/fonts', express.static('public/fonts'));
-app.use('/img', express.static('public/img'));
-app.use('/js', express.static('public/js'));
-app.use('/less', express.static('public/less'));
-app.use('/media', express.static('public/media'));
+app.use('/css', express.static('public/css/'));
+app.use('/fonts', express.static('public/fonts/'));
+app.use('/img', express.static('public/img/'));
+app.use('/js', express.static('public/js/'));
+app.use('/less', express.static('public/less/'));
+app.use('/media', express.static('public/media/'));
+app.use('/public/uploads', express.static('public/uploads/'));
+
 
 
 // Declara tus url handlers en este espacio
@@ -139,7 +163,6 @@ function parseDate(input) {
   // new Date(year, month [, day [, hours[, minutes[, seconds[, ms]]]]])
   return new Date(parts[0], parts[1]-1, parts[2]); // Note: months are 0-based
 }
-
 
 
 app.use(function (req, res, next) {
@@ -199,11 +222,7 @@ app.use(function (req, res, next) {
 
 app.get('/',function (req, res) {
 
-	// console.log(res.locals.cities)
-	// ToDo.find({})
-	// .populate('createdBy')
-	// .populate('city')
-	// .exec(function(err,list){
+	
 	if(!res.locals.user)
 	{
 		res.redirect('/login')
@@ -212,8 +231,6 @@ app.get('/',function (req, res) {
 		
 		if(res.locals.user.profile.profilecode === 2)
 		{
-			console.log('entro')
-
 			Appointment.find({ createdBy: res.locals.user})
 			.populate('createdBy')
 			.populate('customer')
@@ -237,7 +254,7 @@ app.get('/',function (req, res) {
 
 					 	myObj.title = appo.title,
 					 	// myObj.start = new Date(appo.date).toDateString(),
-					 	myObj.start = appo.date.toDateString(),
+					 	myObj.start = appo.dateStart.toDateString(),
 					 	myObj.allDay = false,
 					 	myObj.className = 'bgm-cyan'
 
@@ -247,7 +264,7 @@ app.get('/',function (req, res) {
 					  })
 
 					// var json = JSON.stringify(citas);
-					// console.log(citas)
+					
 
 					res.render('index',{
 
@@ -277,10 +294,15 @@ app.get('/',function (req, res) {
 					
 					 app.forEach(function(appo){
 
+					 	
+					 	// var tat =  JSON.parse(appo.createdBy)
+
+					 	// console.log(tat)
+
 						var myObj = new Object();
 
-					 	myObj.title = appo.title,
-					 	myObj.start = appo.date.toDateString(),
+					 	myObj.title = appo.title 
+					 	myObj.start = appo.dateStart.toDateString(),
 					 	myObj.allDay = false,
 					 	myObj.className = 'bgm-cyan'
 
@@ -655,8 +677,8 @@ app.get('/users/:uuid',function(req,res){
 				return res.send(404, 'Not found')
 			}
 
-			// console.log(list)
-				res.render('view-user', {
+		
+			res.render('view-user', {
 				city: list.city,
 				title: titlepp,
 				user: user,
@@ -736,8 +758,7 @@ app.get('/add-appointment',function(req,res){
 					{
 						return res.send(404, 'Not found')
 					}
-					console.log(users)
-					
+										
 					res.render('appointment',{
 						users:users
 					})
@@ -751,14 +772,14 @@ app.get('/add-appointment',function(req,res){
 	}
 })
 
-app.post('/add-appointment',function(req,res){
+app.post('/add-appointment',upload.single('fileinput'),function(req,res){
 	if(!res.locals.user)
 	{
 		res.redirect('/login')
 	}
 	else
 	{
-
+		
 		Customer.create({
 
 			name: req.body.name,
@@ -772,9 +793,23 @@ app.post('/add-appointment',function(req,res){
 			{
 				return res.send(500,'Internal Server Error');
 			}
+
+
+			var dateStart = new Date(req.body.date)
+			var hours = parseInt(req.body.sessionTime)
+
+			var dateEnd = new Date(dateStart.setHours(dateStart.getHours()+hours))
+
+
 			if(res.locals.user.profile.profilecode == 2)
 			{
+				var imgpath = 'public/uploads/default.jpeg'
+				if(req.file)
+				{	
+					imgpath = req.file.path
+				}
 
+				
 				Appointment.create({
 
 					createdBy: res.locals.user,
@@ -782,56 +817,77 @@ app.post('/add-appointment',function(req,res){
 					description: req.body.description,
 					customer: customer,
 					status: res.locals.active,
-					// imgurl: String,
-					date: parseDate(req.body.date),
-					hour: req.body.time,
+				    imgurl: imgpath,
+					dateStart: new Date(req.body.date),
+					dateEnd: dateEnd,
 					price: req.body.price,
-					advancepay: req.body.advancepay
+					advancepay: req.body.advancePay,
+					typePay: req.body.typePay,
+					comi: req.body.comi
 					
 					
 				},function(err,doc){
-						if(err)
-						{
-							return res.send(500,'Internal Server Error');
-						}
+					if(err)
+					{
+						return res.send(500,'Internal Server Error');
+					}
 					res.redirect('/')
 				})
 
 			}
 			else
 			{
-				Appointment.create({
 
-					createdBy: req.body.tattooer,
-					title: req.body.title,
-					description: req.body.description,
-					customer: customer,
-					status: res.locals.active,
-					// imgurl: String,
-					date: parseDate(req.body.date),
-					hour: req.body.time,
-					price: req.body.price,
-					advancepay: req.body.advancepay
-					
-					
-				},function(err,doc){
+				User.findOne({uuid: req.body.tattooer})
+				.populate('profile')
+				.exec(function(err, user){
+					if(err){
+						return res.send(500, 'Internal Server Error')
+					}
+					if(!user){
+						return res.send(400, 'Not Found')
+					}
+
+					var imgpath = 'public/uploads/default.jpeg'
+					if(req.file)
+					{	
+						imgpath = req.file.path
+					}
+
+					Appointment.create({
+
+						createdBy: user,
+						title: req.body.title,
+						description: req.body.description,
+						customer: customer,
+						status: res.locals.active,
+					    imgurl: imgpath,
+						dateStart: new Date(req.body.date),
+						dateEnd: dateEnd,
+						price: req.body.price,
+						advancepay: req.body.advancePay,
+						typePay: req.body.typePay,
+						comi: req.body.comi
+						
+						
+					},function(err,doc){
 						if(err)
 						{
 							return res.send(500,'Internal Server Error');
 						}
-					res.redirect('/')
-				})
+						res.redirect('/')
+					})
 
-
+				})	
 			}
 
-		})
+		 })
 	}
 })
 
 app.get('/addtat',function(req,res){
 	
-	console.log(res.locals.user.profile.profilecode != 1)
+	
 	if(!res.locals.user || res.locals.user.profile.profilecode != 1 )
 	{
 		res.redirect('/')
@@ -984,8 +1040,8 @@ app.listen(3000, function () {
 // eliminar Datos
  // User.collection.remove();
  // Profile.collection.remove();
- // Appointment.collection.remove();
- // Customer.collection.remove();
+  // Appointment.collection.remove();
+  // Customer.collection.remove();
  // Status.collection.remove();
  // ToDo.collection.remove();
  // Cities.collection.remove();

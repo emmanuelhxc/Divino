@@ -548,9 +548,17 @@ $(document).ready(function(){
     //Date
     if ($('.date-picker')[0]) {
     	$('.date-picker').datetimepicker({
-    	    format: 'YYYY/MM/DD'
+    	    format: 'YYYY/MM/DD',
     	});
     }
+
+    // if ($('#txtfecha')[0]) {
+    //     $('#txtfecha').datetimepicker({
+    //         format: 'YYYY/MM/DD',
+    //         minDate:'-1970/01/02',//yesterday is minimum date(for today use 0 or -1970/01/01)
+    //     });
+    // }
+    
 
     /*
      * Form Wizard

@@ -1,11 +1,13 @@
 {% extends 'layout.html' %}
 
-<!-- Vendor CSS -->
+        <!-- Vendor CSS -->
         <link href="/vendors/bower_components/animate.css/animate.min.css" rel="stylesheet">
         <link href="/vendors/bower_components/bootstrap-sweetalert/lib/sweet-alert.css" rel="stylesheet">
         <link href="/vendors/bower_components/material-design-iconic-font/dist/css/material-design-iconic-font.min.css" rel="stylesheet">
         <link href="/vendors/bower_components/fullcalendar/dist/fullcalendar.min.css" rel="stylesheet">
-        <link href="/vendors/bower_components/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.min.css" rel="stylesheet">        
+        <link href="/vendors/bower_components/mediaelement/build/mediaelementplayer.css" rel="stylesheet">
+        <link href="/vendors/bower_components/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.min.css" rel="stylesheet">    
+         
             
         <!-- CSS -->
         <link href="/css/app.min.1.css" rel="stylesheet">
@@ -80,8 +82,15 @@
                             <i class="zmdi zmdi-comment-alt-text zmdi-hc-fw"></i>
                         </div>
                         <div class="media-body">
-                            <div class="lv-title"><strong>{{d.title}}</strong> - {{d.customer.name}} </div>
-                            <small class="lv-small">{{d.description}} <i>{{d.date | date('Y-m-d')}} </i> </small>
+                            <div class="lv-title"><strong>{{d.title}}</strong> - {{d.createdBy.displayName}} </div>
+                            <small class="lv-small">{{d.description}} - <i>Fecha: {{d.dateStart | date('d-m-Y')}} </i> - <i>Hora: {{d.dateStart | date('g A')}} </i> 
+                            <div class="lightbox row">
+                                <div data-src="media/gallery/1.jpg" class="col-sm-2 col-xs-6">
+                                    <div class="lightbox-item">
+                                        <img src="{{d.imgurl}}" alt="" />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </a>
@@ -93,8 +102,6 @@
 </div>
    
 
-
-
 <script src="/vendors/bower_components/jquery/dist/jquery.min.js"></script>
 <script src="/vendors/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 <script src="/vendors/bower_components/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.concat.min.js"></script>
@@ -102,6 +109,9 @@
 <script src="/vendors/bootstrap-growl/bootstrap-growl.min.js"></script>
 <script src="/vendors/bower_components/bootstrap-sweetalert/lib/sweet-alert.min.js"></script>
 <script src="/vendors/bower_components/moment/min/moment.min.js"></script>
+
+<script src="/vendors/bower_components/mediaelement/build/mediaelement-and-player.min.js"></script>
+
 
 
 <script type="text/javascript">
@@ -121,8 +131,7 @@
         ]
 
 
-                
-
+            
                 // var json = JSON.parse({{dates}});
 
                 var cId = $('#calendar'); //Change the name if you want. I'm also using thsi add button for more actions
@@ -136,9 +145,10 @@
                     },
 
                     theme: true, //Do not remove this as it ruin the design
-                    selectable: true,
-                    selectHelper: true,
-                    editable: true,
+                    selectable: false,
+                    selectHelper: false,
+                    editable: false,
+                    lang: 'es',
 
                     //Add Events
                     events: event,
@@ -149,6 +159,10 @@
                         $('#addNew-event input:text').val('');
                         $('#getStart').val(start);
                         $('#getEnd').val(end);
+                        $('#fc-event').modal.show('')
+                        $('.fc-content').click(function(){
+                            alert('test')
+                        })
                     }
                 });
 
