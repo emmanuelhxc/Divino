@@ -5,6 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Divino Dolor</title>
+    
 
         <!-- {% block csslib %} -->
 
@@ -14,9 +15,9 @@
         <link href="/vendors/bower_components/animate.css/animate.min.css" rel="stylesheet">
         <link href="/vendors/bower_components/bootstrap-sweetalert/lib/sweet-alert.css" rel="stylesheet">
         <link href="/vendors/bower_components/material-design-iconic-font/dist/css/material-design-iconic-font.min.css" rel="stylesheet">
-        <link href="vendors/bower_components/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.min.css" rel="stylesheet">        
+        <link href="/vendors/bower_components/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.min.css" rel="stylesheet">        
         
-        <link href="vendors/bower_components/nouislider/distribute/jquery.nouislider.min.css" rel="stylesheet">
+        <link href="/vendors/bower_components/nouislider/distribute/jquery.nouislider.min.css" rel="stylesheet">
        
         <link href="/vendors/bower_components/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.min.css" rel="stylesheet">
         <link href="/vendors/bower_components/fullcalendar/dist/fullcalendar.min.css" rel="stylesheet">    
@@ -46,7 +47,7 @@
                 </li>
 				
                 <li class="logo hidden-xs">
-                    <a href="/">Divino Dolor</a>
+                    <a href="/">Divino Dolor Tattoo & Piercing</a>
                 </li>
                 
                 <li class="pull-right">
@@ -125,32 +126,19 @@
 		             	<li>
 		             		<a href="/addtat"><i class="zmdi zmdi-brush zmdi-hc-fw"></i>Agregar Tatuador</a>
 		             	</li>
+                         <li>
+                            <a href="/addschedule"><i class="zmdi zmdi-airplane zmdi-hc-fw"></i> Dias Libres</a>
+                        </li>
                  	{% endif %}
                  	<li>
              			<a href="/add-appointment"><i class="zmdi zmdi-calendar-note zmdi-hc-fw"></i> Agendar Cita </a>
 		        	</li>
-
-                 	{% for d in cities %}
-					  <li{% if loop.first %} class="first"{% endif %}>
-
-						  <a href="/city/{{ d.name }}"> <i class="zmdi zmdi-city zmdi-hc-fw"></i>{{ d.name }}</a>
-
-					  </li>
-					{% endfor %}
-
                  	<li>
                  		<a href="/log-out"><i class="zmdi zmdi-close zmdi-hc-fw"></i> Cerrar Sesión </a>
                  	</li>
 
                 {% else %}
 
-	                {% for d in cities %}
-						  <li{% if loop.first %} class="first"{% endif %}>
-
-							  <a href="/city/{{ d.name }}"> <i class="zmdi zmdi-city zmdi-hc-fw"></i>{{ d.name }}</a>
-
-						  </li>
-					{% endfor %}
 
                 {% endif %}
                   

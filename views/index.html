@@ -74,18 +74,18 @@
                                     
         <div class="card-body">
             <div class="listview">
-
             	{% for d in app %}
-                <a class="lv-item" href="#">
+                <a class="lv-item" href="appointment/{{d.uuid}}">
                     <div class="media">
                         <div class="pull-left">
                             <i class="zmdi zmdi-comment-alt-text zmdi-hc-fw"></i>
                         </div>
                         <div class="media-body">
                             <div class="lv-title"><strong>{{d.title}}</strong> - {{d.createdBy.displayName}} </div>
-                            <small class="lv-small">{{d.description}} - <i>Fecha: {{d.dateStart | date('d-m-Y')}} </i> - <i>Hora: {{d.dateStart | date('g A')}} </i> 
+                            <small class="lv-small">{{d.description}} - <i>Fecha: {{d.dateStart | date('d-M-y')}} </i> 
+                            <!-- - <strong><i>{{d.dateStart | date('g : i A')}} </i>  -  <i>{{d.dateEnd | date('g : i A')}} </i></strong> -->
                             <div class="lightbox row">
-                                <div data-src="media/gallery/1.jpg" class="col-sm-2 col-xs-6">
+                                <div data-src="{{d.imgurl}}" class="col-sm-2 col-xs-6">
                                     <div class="lightbox-item">
                                         <img src="{{d.imgurl}}" alt="" />
                                     </div>
@@ -94,8 +94,7 @@
                         </div>
                     </div>
                 </a>
-                {%endfor%}
-                
+                {%endfor%}                
             </div>
         </div>
     </div> 
@@ -123,13 +122,13 @@
             {
                 title : '{{d.title}}',
                 start :  new Date('{{d.start}}'),
+                id : '{{d.id}}',
                 allDay : true,
                 className : 'bgm-cyan'
             },
 
             {% endfor %}
         ]
-
 
             
                 // var json = JSON.parse({{dates}});
@@ -163,7 +162,21 @@
                         $('.fc-content').click(function(){
                             alert('test')
                         })
-                    }
+                    },
+                     
+                    eventClick: function(calEvent, jsEvent, view) {
+                    
+                    window.location.href = 'appointment/' + calEvent.id; 
+                    // alert('Event: ' + calEvent.title);
+                    // alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
+                    // alert('View: ' + view.name);
+
+                    // // change the border color just for fun
+                    // $(this).css('border-color', 'red');
+
+                     //$('#addNew-event').modal('show'); 
+
+                }
                 });
 
                 //Create and ddd Action button with dropdown in Calendar header. 

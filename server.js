@@ -1,6 +1,7 @@
 var express = require('express')
 var swig = require('swig')
 var mongoose = require('mongoose')
+var moment = require('moment')
 var bodyParser = require('body-parser')
 var uuid = require('uuid')
 var bcrypt = require('bcrypt-nodejs')
@@ -16,11 +17,11 @@ var storage = multer.diskStorage({
   	onFileUploadStart: function (file) {
   		console.log(file.fieldname + ' is starting ...')
 	},
-	limits:{fileSize: 10000000, files:1}
+	limits:{fileSize: 10000000, files:1}	
 })
 
 
-
+	
 var upload = multer({storage:storage})
 
 
@@ -103,9 +104,15 @@ var customerSchema = Schema({
 
 var Customer = mongoose.model('Customer', customerSchema)
 
-var scheduler = Schema({
+var schedulerSchema = Schema({
+
+	date: Date,
+	tattooer: {type:Schema.Types.ObjectId, ref:'User'},
+	createdBy: {type:Schema.Types.ObjectId, ref:'User'},
 
 })
+
+var Schedule = mongoose.model('Scheduler', schedulerSchema)
 
 var citySchema = Schema({
 	name: String,
@@ -243,18 +250,16 @@ app.get('/',function (req, res) {
 						'start': Date,
 						'allDay': Boolean,
 						'className': String,
+						'id': uuid.v4,
 					}
 					
 					 app.forEach(function(appo){
 
-						
-					 	// citas.push({ title: appo.title, start: appo.date , allDay: false, className : 'bgm-cyan'})
-
 					 	var myObj = new Object();
 
-					 	myObj.title = appo.title,
-					 	// myObj.start = new Date(appo.date).toDateString(),
+					 	myObj.title = appo.title + ' - ' + appo.createdBy.displayName,
 					 	myObj.start = appo.dateStart.toDateString(),
+					 	myObj.id = appo.uuid,
 					 	myObj.allDay = false,
 					 	myObj.className = 'bgm-cyan'
 
@@ -262,9 +267,6 @@ app.get('/',function (req, res) {
 					 	citas.push(myObj)
 		            
 					  })
-
-					// var json = JSON.stringify(citas);
-					
 
 					res.render('index',{
 
@@ -290,19 +292,19 @@ app.get('/',function (req, res) {
 						'start': Date,
 						'allDay': Boolean,
 						'className': String,
+						'id': uuid.v4,
 					}
 					
 					 app.forEach(function(appo){
 
 					 	
-					 	// var tat =  JSON.parse(appo.createdBy)
-
-					 	// console.log(tat)
+					 	// var tat =  JSON.parse(appo.createdBy)					
 
 						var myObj = new Object();
 
-					 	myObj.title = appo.title 
+					 	myObj.title = appo.title + ' - ' + appo.createdBy.displayName,
 					 	myObj.start = appo.dateStart.toDateString(),
+					 	myObj.id = appo.uuid,
 					 	myObj.allDay = false,
 					 	myObj.className = 'bgm-cyan'
 
@@ -675,8 +677,7 @@ app.get('/users/:uuid',function(req,res){
 
 			if(!list){
 				return res.send(404, 'Not found')
-			}
-
+			}		
 		
 			res.render('view-user', {
 				city: list.city,
@@ -758,6 +759,7 @@ app.get('/add-appointment',function(req,res){
 					{
 						return res.send(404, 'Not found')
 					}
+
 										
 					res.render('appointment',{
 						users:users
@@ -767,10 +769,246 @@ app.get('/add-appointment',function(req,res){
 		}
 		else
 		{
-		res.render('appointment')
+
+			Appointment.find({ createdBy: res.locals.user},function(err,appo)
+			{
+				if(err)
+				{
+					return res.send(500,'Internal Server Error');
+				}
+				if(!appo)
+				{
+					return res.send(404, 'Not found')
+				}
+
+				Schedule.find({tattooer: res.locals.user},function(err,daysOff){
+
+					if(err)
+					{
+						return res.send(500,'Internal Server Error');
+					}
+					if(!daysOff)
+					{
+						return res.send(404, 'Not found')
+					}
+
+					var days = []
+
+
+					daysOff.forEach(function(day){
+
+						days.push(moment(day.date.toDateString()).format("MM/DD/YYYY"))
+			            
+				  	})
+
+				  	// console.log(appo)
+
+				  	appo.forEach(function(app)
+				  	{
+				  		days.push(moment(app.dateStart).format("MM/DD/YYYY HH:mm" ))
+
+				  	})
+				  	
+					res.render('appointment',{
+						daysOff: days
+					})
+				})
+			})
 		}
 	}
 })
+
+app.get('/appointment/:uuid',function(req,res){
+	if(!res.locals.user)
+	{
+		res.redirect('/login')
+	}
+	else
+	{
+		if(res.locals.user.profile.profilecode == 1)
+		{
+			
+			Profile.findOne({profilecode: 2},function(err,profile){
+
+				if(err)
+				{
+					return res.send(500,'Internal Server Error');
+				}
+
+				if(!profile)
+				{
+					return res.send(400,'Not Found');
+				}
+
+				
+				User.find({profile : profile},function(err,users){
+
+					if(err)
+					{
+						return res.send(500,'Internal Server Error');
+					}
+					if(!users)
+					{
+						return res.send(404, 'Not found')
+					}
+
+
+					Appointment
+					.findOne({uuid:req.params.uuid})
+					.populate('customer')
+					.exec(function(err,appointment){
+
+						if(err)
+						{
+							return res.send(500,'Internal Server Error');
+						}
+						if(!appointment)
+						{
+							return res.send(404, 'Not found')
+						}
+
+
+
+						res.render('appointmentedit',{
+								users:users,
+								cita: appointment,
+								cliente: appointment.customer
+
+						})
+					})		
+				})
+			})
+		}
+		else
+		{
+			Appointment
+				.findOne({uuid:req.params.uuid})
+				.populate('customer')
+				.populate('createdBy')
+				.exec(function(err,appointment){
+
+				if(err)
+				{
+					return res.send(500,'Internal Server Error');
+				}
+				if(!appointment)
+				{
+					return res.send(404, 'Not found')
+				}
+
+				res.render('appointmentedit',{
+						users: appointment.createdBy,
+						cita: appointment,
+						cliente: appointment.customer
+
+				})
+			})	
+		}
+	}
+})
+
+app.post('/appointment/:uuid', upload.single('fileinput'),function(req,res){
+	if(!res.locals.user)
+	{
+		res.redirect('/login')
+	}
+	else
+	{
+
+		Appointment.findOne({uuid: req.params.uuid})
+		.populate('customer')
+		.exec(function (err, doc) {
+			if(err){
+				return res.send(500, 'Internal Server Error')
+			}
+
+			if(!doc){
+				return res.send(404, 'Not found')
+			}
+
+			var dateStart = new Date(req.body.date)
+			
+			var hours = parseInt(req.body.sessionTime)
+
+			var dateEnd = new Date(dateStart.setHours(dateStart.getHours()+hours))
+
+			if(res.locals.user.profile.profilecode == 2)
+			{
+				var imgpath = 'public/uploads/default.jpeg'
+				if(req.file)
+				{	
+					imgpath = req.file.path
+				}				
+
+				doc.modifiedBy = res.locals.user,
+				doc.title = req.body.title,
+				doc.description = req.body.description,
+				doc.dateStart = new Date(req.body.date),
+				doc.dateEnd = dateEnd,
+				doc.imgurl = imgpath,
+				doc.price = req.body.price,
+				doc.advancepay = req.body.advancePay,
+				doc.typePay = req.body.typePay,
+				doc.comi = req.body.comi
+
+				doc.save(function (err) {
+					if(err){
+						return res.send(500, 'Internal Server Error')
+					}
+
+					res.redirect('/')
+				})	
+
+				
+			}
+			else
+			{
+
+				User.findOne({uuid: req.body.tattooer})
+				.populate('profile')
+				.exec(function(err, user){
+					if(err){
+						return res.send(500, 'Internal Server Error')
+					}
+					if(!user){
+						return res.send(400, 'Not Found')
+					}
+
+					var imgpath = 'public/uploads/default.jpeg'
+					if(req.file)
+					{	
+						imgpath = req.file.path
+					}			
+
+					
+					doc.createdBy = user,
+					doc.modifiedBy = res.locals.user,
+					doc.title = req.body.title,
+					doc.description = req.body.description,
+					doc.dateStart = new Date(req.body.date),
+					doc.dateEnd = dateEnd,
+					doc.imgurl = imgpath,
+					doc.price = req.body.price,
+					doc.advancepay = req.body.advancePay,
+					doc.typePay = req.body.typePay,
+					doc.comi = req.body.comi
+
+					doc.save(function (err) {
+						if(err){
+							return res.send(500, 'Internal Server Error')
+						}
+
+						res.redirect('/')
+					})	
+
+				})	
+			}
+
+		})
+	}
+
+})
+
 
 app.post('/add-appointment',upload.single('fileinput'),function(req,res){
 	if(!res.locals.user)
@@ -937,6 +1175,83 @@ app.post('/addtat',function(req,res){
 	}
 })
 
+app.get('/addschedule',function(req,res){
+	if(!res.locals.user)
+	{
+		res.redirect('/login')
+	}
+	else
+	{
+		Profile.findOne({profilecode: 2},function(err,profile){
+
+			if(err)
+			{
+				return res.send(500,'Internal Server Error');
+			}
+
+			if(!profile)
+			{
+				return res.send(400,'Not Found');
+			}
+
+			
+			User.find({profile : profile},function(err,users){
+
+				if(err)
+				{
+					return res.send(500,'Internal Server Error');
+				}
+				if(!users)
+				{
+					return res.send(404, 'Not found')
+				}
+
+									
+				res.render('addscheduler',{
+					users:users
+				})
+			})
+		})
+	}
+})
+
+app.post('/addschedule',function(req,res){
+	if(!res.locals.user)
+	{
+		res.redirect('/login')
+	}
+	else
+	{
+
+		User.findOne({uuid: req.body.tattooer})
+			.populate('profile')
+			.exec(function(err, user){
+				if(err){
+					return res.send(500, 'Internal Server Error')
+				}
+				if(!user){
+					return res.send(400, 'Not Found')
+				}
+
+
+				Schedule.create({
+
+					date: req.body.date,
+					tattooer: user,
+					createdBy: res.locals.user,
+
+
+				},function(err,sch){
+					if(err)
+					{
+						return res.send(500, 'Internal Server Error')
+					}
+					res.redirect('/')
+				})
+		})
+	}
+})
+
 
 
 
@@ -1038,14 +1353,14 @@ function instalador()
 app.listen(3000, function () {
 
 // eliminar Datos
- // User.collection.remove();
- // Profile.collection.remove();
-  // Appointment.collection.remove();
-  // Customer.collection.remove();
- // Status.collection.remove();
- // ToDo.collection.remove();
- // Cities.collection.remove();
- //Profile.collection.remove();
+// User.collection.remove();
+// Profile.collection.remove();
+// Appointment.collection.remove();
+// Customer.collection.remove();
+// Status.collection.remove();
+// ToDo.collection.remove();
+// Cities.collection.remove();
+//Profile.collection.remove();
 
     // instalador()
 	console.log('Example app listening on port 3000! ' + new Date())

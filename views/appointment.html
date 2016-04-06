@@ -199,8 +199,8 @@
                     <div class="col-sm-12">
                         <div class="input-group fg-float m-b-30">
                             <div class="fg-line">
-                                <button class="btn btn-info" type="submit">Guardar</button>
-                                <button class="btn btn-link" id="btn-cancel">Cancelar</button>
+                                <button class="btn bgm-deeporange waves-effect" type="submit">Guardar</button>
+                                <button class="btn btn-default waves-effect" id="btn-cancel">Cancelar</button>
                             </div>
                         </div>
                     </div>    
@@ -258,9 +258,26 @@
         window.location.href = '/'; 
     })
 
+   
+
+    var disdates = [
+
+            {% for d in daysOff %}
+                   
+                      "{{d}}"  ,
+
+            {% endfor %}
+    ]
+  
+
     $('#txtfecha').datetimepicker({
-        minDate: new Date()
+        minDate: new Date(),
+        disabledDates: disdates,
+        // beforeShowDay: DisableSpecificDates
     });
+
+
+
 
     // $('#txthora').datetimepicker({
     //     format: 'HH:mm',

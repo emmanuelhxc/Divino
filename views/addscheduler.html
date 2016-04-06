@@ -1,0 +1,92 @@
+{% extends 'layout.html' %}
+       
+
+ <link href="/vendors/bower_components/bootstrap-select/dist/css/bootstrap-select.css" rel="stylesheet">
+<link href="/vendors/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+
+<link href="/css/app.min.1.css" rel="stylesheet">
+<link href="/css/app.min.2.css" rel="stylesheet">
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header bgm-green">
+            <h2>Dias Libres<small></small></h2>
+        </div>
+        
+        <div class="card-body card-padding">
+            <form  method="POST" action="addschedule">
+                <div class="col-sm-12">
+                     <div class="input-group fg-float m-b-30">
+                        <span class="input-group-addon"><i class="zmdi zmdi-calendar"></i></span>
+                        <div class="fg-line">
+                            <input type="text" name="date" class="form-control input-lg" placeholder="" id="txtfechaini">
+                            <label class="fg-label">Fecha Inicio</label>
+                        </div>
+                    </div>
+                    <div class="input-group fg-float m-b-30">
+                        <span class="input-group-addon"><i class="zmdi zmdi-calendar"></i></span>
+                        <div class="fg-line">
+                            <input type="text" name="date" class="form-control input-lg" placeholder="" id="txtfechafin">
+                            <label class="fg-label">Fecha Fin</label>
+                        </div>
+                    </div>
+
+                     {% if user.profile.profilecode === 1 %}
+
+                        <div class="col-sm-6 m-b-25">
+                        <p class="f-500 m-b-15 c-black">Selecciona Artista</p>
+                           
+                           <select class="selectpicker" data-live-search="true" name="tattooer">
+                                
+                                {% for d in users %}
+                                        <option value="{{ d.uuid }}">{{ d.displayName }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                   
+                    {% endif %}
+                </div>   
+            
+                <button class="btn btn-success waves-effect" type="submit">Crear</button>
+                <button class="btn btn-default waves-effect" id="btn-cancel">Cancelar</button>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- {% block jslib %} -->
+    <script src="/vendors/bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="/vendors/bower_components/autosize/dist/autosize.min.js"></script>
+    <script src="/vendors/bower_components/moment/min/moment.min.js"></script>
+
+    <script src="/vendors/bower_components/bootstrap-select/dist/js/bootstrap-select.js"></script>
+    <script src="/vendors/bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
+
+<!-- {% endblock %} -->
+
+
+<script type="text/javascript">
+    
+    $('#btn-cancel').click(function(event){
+        event.preventDefault();
+        window.location.href = '/'; 
+
+    })
+
+    $('#txtfecha').datetimepicker({
+        format: 'MM/DD/YYYY',
+        minDate: new Date(),
+       
+    });
+
+
+</script>
+
+
+	
+
+
+	
+		
