@@ -171,6 +171,17 @@ function parseDate(input) {
   return new Date(parts[0], parts[1]-1, parts[2]); // Note: months are 0-based
 }
 
+//obtiene array de intervalo de fechas
+function getDates(startDate, stopDate) {
+    var dateArray = [];
+    var currentDate = moment(startDate);
+    while (currentDate <= stopDate) {
+        dateArray.push( moment(currentDate).format('MM/DD/YYYY') )
+        currentDate = moment(currentDate).add(1, 'days');
+    }
+    return dateArray;
+}
+
 
 app.use(function (req, res, next) {
 
@@ -797,11 +808,9 @@ app.get('/add-appointment',function(req,res){
 
 					daysOff.forEach(function(day){
 
-						days.push(moment(day.date.toDateString()).format("MM/DD/YYYY"))
+						days.push(moment(day.date).format("MM/DD/YYYY"))
 			            
 				  	})
-
-				  	// console.log(appo)
 
 				  	appo.forEach(function(app)
 				  	{
@@ -1223,6 +1232,16 @@ app.post('/addschedule',function(req,res){
 	else
 	{
 
+		// var a = moment(new Date(req.body.dateStart).toDateString()).format("MM/DD/YYYY")
+		// var b = moment(new Date(req.body.dateEnd).toDateString()).format("MM/DD/YYYY")
+
+		var a = new Date(req.body.dateStart)
+		var b = new Date(req.body.dateEnd)
+
+		var dates = []
+
+		dates = getDates(a,b)
+
 		User.findOne({uuid: req.body.tattooer})
 			.populate('profile')
 			.exec(function(err, user){
@@ -1234,20 +1253,25 @@ app.post('/addschedule',function(req,res){
 				}
 
 
-				Schedule.create({
+				dates.forEach(function(fechas){
+					console.log(fechas)
 
-					date: req.body.date,
-					tattooer: user,
-					createdBy: res.locals.user,
+					Schedule.create({
+
+						date: fechas,
+						tattooer: user,
+						createdBy: res.locals.user,
 
 
-				},function(err,sch){
-					if(err)
-					{
-						return res.send(500, 'Internal Server Error')
-					}
-					res.redirect('/')
+					},function(err,sch){
+						if(err)
+						{
+							return res.send(500, 'Internal Server Error')
+						}
+					
+					})
 				})
+			res.redirect('/')
 		})
 	}
 })
