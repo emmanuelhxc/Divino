@@ -51,6 +51,67 @@
                         </div>
                     </div>
                 </div> 
+                <div class="col-sm-12">
+                    
+                     <p class="c-black f-500 m-b-20 m-t-20">Dias a trabajar</p>
+
+                    <div class="input-group fg-float m-b-30">
+
+                        <label class="checkbox checkbox-inline m-r-20">
+                            <input type="checkbox" value="1" name="workingdays">
+                            <i class="input-helper"></i>    
+                            Lunes
+                        </label>
+                        <label class="checkbox checkbox-inline m-r-20">
+                            <input type="checkbox" value="2" name="workingdays">
+                            <i class="input-helper"></i>    
+                            Martes
+                        </label>
+                        <label class="checkbox checkbox-inline m-r-20">
+                            <input type="checkbox" value="3" name="workingdays">
+                            <i class="input-helper"></i>    
+                            Miercoles
+                        </label>
+                          <label class="checkbox checkbox-inline m-r-20">
+                            <input type="checkbox" value="4" name="workingdays">
+                            <i class="input-helper"></i>    
+                            Jueves
+                        </label>
+                        <label class="checkbox checkbox-inline m-r-20">
+                            <input type="checkbox" value="5" name="workingdays">
+                            <i class="input-helper"></i>    
+                            Viernes
+                        </label>
+                        <label class="checkbox checkbox-inline m-r-20">
+                            <input type="checkbox" value="6" name="workingdays">
+                            <i class="input-helper"></i>    
+                            Sabado
+                        </label>
+                        <label class="checkbox checkbox-inline m-r-20">
+                            <input type="checkbox" value="7" name="workingdays">
+                            <i class="input-helper"></i>    
+                            Domingo
+                        </label>
+                    </div>
+                </div>
+                <div class="col-sm-12">
+                     <div class="form-group">
+                        <label for="eventName">Seleccionar Color Citas</label>
+                        <div class="event-tag">
+                            <span data-tag="bgm-teal" class="bgm-teal selected"></span>
+                            <span data-tag="bgm-red" class="bgm-red"></span>
+                            <span data-tag="bgm-pink" class="bgm-pink"></span>
+                            <span data-tag="bgm-blue" class="bgm-blue"></span>
+                            <span data-tag="bgm-lime" class="bgm-lime"></span>
+                            <span data-tag="bgm-green" class="bgm-green"></span>
+                            <span data-tag="bgm-cyan" class="bgm-cyan"></span>
+                            <span data-tag="bgm-orange" class="bgm-orange"></span>
+                            <span data-tag="bgm-purple" class="bgm-purple"></span>
+                            <span data-tag="bgm-gray" class="bgm-gray"></span>
+                            <span data-tag="bgm-black" class="bgm-black"></span>
+                        </div>
+                    </div>
+                </div>
                
                 
                     <button class="btn btn-success waves-effect" type="submit">Crear</button>
@@ -82,6 +143,10 @@
         window.location.href = '/index'; 
 
     })
+    $('body').on('click', '.event-tag > span', function(){
+                    $('.event-tag > span').removeClass('selected');
+                    $(this).addClass('selected');
+    });
 
 
 </script>

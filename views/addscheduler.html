@@ -58,6 +58,8 @@
 
 <!-- {% block jslib %} -->
     <script src="/vendors/bower_components/jquery/dist/jquery.min.js"></script>
+
+
     <script src="/vendors/bower_components/autosize/dist/autosize.min.js"></script>
     <script src="/vendors/bower_components/moment/min/moment.min.js"></script>
 
@@ -81,21 +83,20 @@
        
     });
 
-
     $('#txtfechafin').datetimepicker({
         format: 'MM/DD/YYYY',
-        useCurrent: false
+        useCurrent: false,
     });
 
-    // $('#txtfechaini').on("dp.change", function (e) {
+    $('#txtfechaini').on("dp.change", function (e) {
         
-    //      $('#txtfechafin').data('datetimepicker').minDate()
-    // });
+         $('#txtfechafin').data('datetimepicker').minDate(e.date);
+    });
 
-    // $('#txtfechafin').on("dp.change", function (e) {
+    $('#txtfechafin').on("dp.change", function (e) {
         
-        // $('#txtfechaini').data("datetimepicker").maxDate(e.date);
-    // });
+        $('#txtfechaini').data("datetimepicker").maxDate(e.date);
+    });
 
     // $('#txtfechafin').datetimepicker({
     //     format: 'MM/DD/YYYY',

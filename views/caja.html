@@ -1,0 +1,153 @@
+{% extends 'layout.html' %}
+       
+
+ <link href="/vendors/bower_components/bootstrap-select/dist/css/bootstrap-select.css" rel="stylesheet">
+<link href="/vendors/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+
+<link href="/css/app.min.1.css" rel="stylesheet">
+<link href="/css/app.min.2.css" rel="stylesheet">
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header bgm-purple">
+            <h2>Registrar Entrada o Salidas de Efectivo<small></small></h2>
+        </div>
+        
+        <div class="card-body card-padding">
+            <form  method="POST" action="payment">
+                <div class="col-sm-12">
+                     <div class="input-group fg-float m-b-30">
+                        <span class="input-group-addon"><i class="zmdi zmdi-sort-amount-desc"></i></span>
+                        <div class="fg-line">
+                            <input type="text" name="descripcion" class="form-control input-lg" >
+                            <label class="fg-label">Descripción</label>
+                        </div>
+                    </div>
+                    <div class="input-group fg-float m-b-30">
+                        <span class="input-group-addon"><i class="zmdi zmdi-money-box"></i></span>
+                        <div class="fg-line">
+                            <input type="text" name="monto" class="form-control input-lg" >
+                            <label class="fg-label">Monto</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-12">
+                    
+                    <p class="c-black f-500 m-b-20 m-t-20">Tipo de Registro</p>
+
+                    <div class="input-group fg-float m-b-30">
+
+                        <label class="radio radio-inline m-r-20">
+                            <input type="radio" name="tipoentrada" value="1">
+                            <i class="input-helper"></i>    
+                            Entrada
+                        </label>
+                        <label class="radio radio-inline m-r-20">
+                            <input type="radio" name="tipoentrada" value="0">
+                            <i class="input-helper"></i>    
+                            Salida
+                        </label>
+                    </div> 
+                </div>
+            
+                <button class="btn btn-success waves-effect" type="submit">Crear</button>
+                <button class="btn btn-default waves-effect" id="btn-cancel">Cancelar</button>
+
+            </form>
+        </div>
+
+        <div class="card">
+                        <div class="card-header">
+                            <h2>Entradas del día <small></small></h2>
+                        </div>
+                        
+                        <div class="card-body table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Monto</th> 
+                                        <th>Tipo</th> 
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                   {% for d in entradas %}
+                                   <tr> 
+                                        <td>{{ d.description }}</td>
+                                        <td>{{ d.amount }}</td>
+                                        {% if d.tipepay === 1 %}
+                                             <td>Entrada</td>
+                                        {% else %}
+                                            <td>Salida</td>
+                                        {% endif %}
+                                    </tr>
+                                 {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+    </div>
+</div>
+
+<!-- {% block jslib %} -->
+    <script src="/vendors/bower_components/jquery/dist/jquery.min.js"></script>
+
+
+    <script src="/vendors/bower_components/autosize/dist/autosize.min.js"></script>
+    <script src="/vendors/bower_components/moment/min/moment.min.js"></script>
+
+    <script src="/vendors/bower_components/bootstrap-select/dist/js/bootstrap-select.js"></script>
+    <script src="/vendors/bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
+
+<!-- {% endblock %} -->
+
+
+<script type="text/javascript">
+    
+    $('#btn-cancel').click(function(event){
+        event.preventDefault();
+        window.location.href = '/'; 
+
+    })
+
+    alert({{ totalEntradas}}  + ' ' + {{ totalCaja }}  + ' ' + {{ totalSalidas }} )
+
+
+
+    // $('#txtfechaini').datetimepicker({
+    //     format: 'MM/DD/YYYY',
+    //     minDate: new Date(),
+       
+    // });
+
+    // $('#txtfechafin').datetimepicker({
+    //     format: 'MM/DD/YYYY',
+    //     useCurrent: false,
+    // });
+
+    // $('#txtfechaini').on("dp.change", function (e) {
+        
+    //      $('#txtfechafin').data('datetimepicker').minDate(e.date)
+    // });
+
+    // $('#txtfechafin').on("dp.change", function (e) {
+        
+    //     $('#txtfechaini').data("datetimepicker").maxDate(e.date);
+    // });
+
+    // $('#txtfechafin').datetimepicker({
+    //     format: 'MM/DD/YYYY',
+    //     minDate: new Date(),
+       
+    // });
+
+
+</script>
+
+
+	
+
+
+	
+		

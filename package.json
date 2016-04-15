@@ -6,10 +6,12 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Daniel Zavala",
+  "author": "Emmanuel Morales",
   "license": "ISC",
   "dependencies": {
+    "async": "^2.0.0-rc.3",
     "bcrypt-nodejs": "0.0.3",
+    "bluebird": "^3.3.5",
     "body-parser": "^1.14.2",
     "express": "^4.13.4",
     "express-session": "^1.13.0",

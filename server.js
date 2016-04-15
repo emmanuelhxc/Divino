@@ -6,6 +6,8 @@ var bodyParser = require('body-parser')
 var uuid = require('uuid')
 var bcrypt = require('bcrypt-nodejs')
 var multer = require('multer')
+// var promise = require('bluebird')
+var async = require('async')
 
 var storage = multer.diskStorage({
 	destination: function (req, file, cb) {
@@ -109,10 +111,24 @@ var schedulerSchema = Schema({
 	date: Date,
 	tattooer: {type:Schema.Types.ObjectId, ref:'User'},
 	createdBy: {type:Schema.Types.ObjectId, ref:'User'},
+	uuid : {type: String, default: uuid.v4}
 
 })
 
 var Schedule = mongoose.model('Scheduler', schedulerSchema)
+
+var paymentSchema = Schema({
+
+	date: { type:Date , default: new Date() },
+	createdBy: {type:Schema.Types.ObjectId, ref:'User'},
+	tipepay: Number, //1=entrada  0=salida
+	amount: Number,
+	description: String,
+	uuid : {type: String, default: uuid.v4}
+
+})
+
+var payment = mongoose.model('payment', paymentSchema)
 
 var citySchema = Schema({
 	name: String,
@@ -162,9 +178,7 @@ app.use('/media', express.static('public/media/'));
 app.use('/public/uploads', express.static('public/uploads/'));
 
 
-
 // Declara tus url handlers en este espacio
-
 function parseDate(input) {
   var parts = input.split('/');
   // new Date(year, month [, day [, hours[, minutes[, seconds[, ms]]]]])
@@ -246,10 +260,11 @@ app.get('/',function (req, res) {
 		res.redirect('/login')
 	}	
 	else{
+		var today = moment().format('YYYY-MM-DD')
 		
 		if(res.locals.user.profile.profilecode === 2)
 		{
-			Appointment.find({ createdBy: res.locals.user})
+			Appointment.find({ createdBy: res.locals.user })
 			.populate('createdBy')
 			.populate('customer')
 			.exec(function(err,app){
@@ -291,7 +306,7 @@ app.get('/',function (req, res) {
 		else
 		{
 			
-			Appointment.find({})
+			Appointment.find({ })
 			.populate('createdBy')
 			.populate('customer')
 			.exec(function(err,app){
@@ -307,13 +322,11 @@ app.get('/',function (req, res) {
 					}
 					
 					 app.forEach(function(appo){
-
-					 	
-					 	// var tat =  JSON.parse(appo.createdBy)					
+				
 
 						var myObj = new Object();
 
-					 	myObj.title = appo.title + ' - ' + appo.createdBy.displayName,
+					 	myObj.title = appo.createdBy.displayName + ' '+  moment(appo.dateStart).format('h:mm') + ' - ' +  moment(appo.dateEnd).format('h:mm')  ,
 					 	myObj.start = appo.dateStart.toDateString(),
 					 	myObj.id = appo.uuid,
 					 	myObj.allDay = false,
@@ -323,8 +336,6 @@ app.get('/',function (req, res) {
 					 	citas.push(myObj)
 		            
 					  })
-
-					
 
 					res.render('index',{
 
@@ -963,10 +974,27 @@ app.post('/appointment/:uuid', upload.single('fileinput'),function(req,res){
 				doc.save(function (err) {
 					if(err){
 						return res.send(500, 'Internal Server Error')
+					}					
+				})	
+
+				if(req.body.advancePay > 0)
+					{
+						payment.create({
+							createdBy: res.locals.user,
+							tipepay: 1, //1=entrada  0=salida
+							amount: req.body.advancePay,
+							description: 'Anticipo cita ' + res.locals.user.displayName,
+
+						},function(err,doc){
+							if(err)
+							{
+								return res.send(500,'Internal Server Error');
+							}
+								
+						})
 					}
 
-					res.redirect('/')
-				})	
+				res.redirect('/')
 
 				
 			}
@@ -1006,9 +1034,27 @@ app.post('/appointment/:uuid', upload.single('fileinput'),function(req,res){
 						if(err){
 							return res.send(500, 'Internal Server Error')
 						}
+						
+					})	
+
+					if(req.body.advancePay > 0)
+						{
+							payment.create({
+								createdBy: res.locals.user,
+								tipepay: 1, //1=entrada  0=salida
+								amount: req.body.advancePay,
+								description: 'Anticipo cita ' + res.locals.user.displayName,
+
+							},function(err,doc){
+								if(err)
+								{
+									return res.send(500,'Internal Server Error');
+								}
+									
+							})
+						}
 
 						res.redirect('/')
-					})	
 
 				})	
 			}
@@ -1078,9 +1124,26 @@ app.post('/add-appointment',upload.single('fileinput'),function(req,res){
 					{
 						return res.send(500,'Internal Server Error');
 					}
-					res.redirect('/')
+					
 				})
 
+				if(req.body.advancePay > 0)
+				{
+					payment.create({
+						createdBy: res.locals.user,
+						tipepay: 1, //1=entrada  0=salida
+						amount: req.body.advancePay,
+						description: 'Anticipo cita ' + res.locals.user.displayName,
+
+					},function(err,doc){
+						if(err)
+						{
+							return res.send(500,'Internal Server Error');
+						}
+						res.redirect('/')		
+					})
+				}
+				res.redirect('/')
 			}
 			else
 			{
@@ -1122,9 +1185,29 @@ app.post('/add-appointment',upload.single('fileinput'),function(req,res){
 						{
 							return res.send(500,'Internal Server Error');
 						}
-						res.redirect('/')
-					})
+						
+						if(doc.advancePay > 0)
+						{
 
+							payment.create({
+								createdBy: res.locals.user,
+								tipepay: 1, //1=entrada  0=salida
+								amount: doc.advancePay,
+								description: 'Anticipo cita ' + res.locals.user.displayName,
+
+							},function(err,doc){
+								if(err)
+								{
+									return res.send(500,'Internal Server Error');
+								}
+								res.redirect('/')		
+							})
+						}
+
+						res.redirect('/')	
+						
+					})
+					
 				})	
 			}
 
@@ -1232,9 +1315,6 @@ app.post('/addschedule',function(req,res){
 	else
 	{
 
-		// var a = moment(new Date(req.body.dateStart).toDateString()).format("MM/DD/YYYY")
-		// var b = moment(new Date(req.body.dateEnd).toDateString()).format("MM/DD/YYYY")
-
 		var a = new Date(req.body.dateStart)
 		var b = new Date(req.body.dateEnd)
 
@@ -1276,8 +1356,123 @@ app.post('/addschedule',function(req,res){
 	}
 })
 
+app.get('/payment',function(req,res){
+	if(!res.locals.user)
+	{
+		res.redirect('/login')
+	}
+	else
+	{
+		var today = moment().format('YYYY-MM-DD')
+
+		
+
+		var saldoTotalCaja = 0
+		var saldoTotalEntradas = 0
+		var saldoTotalSalidas = 0
+
+		async.parallel([
+		 
+		    //entradas
+		    function(callback) {
+		        payment.find({'tipepay': 1 , '$where': 'this.date.toJSON().slice(0, 10) == "'+today+'"'  }).exec(function(err,doc){
+		  	
+				    if(err)  {
+				      callback(err)
+				    }
+				    var total = 0
+
+				    doc.forEach(function(pay){
+				      total += total + pay.amount;
+				  
+				    })
+				    callback(null,total)
+			   
+			 	 })
+		    },
+		 
+		    //salidas
+		    function(callback) {
+		        payment.find({'tipepay': 0, '$where': 'this.date.toJSON().slice(0, 10) == "'+today+'"'})
+		        	   .exec(function(err,doc){
+		  	
+				    if(err)  {
+				      callback(err)
+				    }
+					var total = 0
+				    doc.forEach(function(pay){
+				      total += total + pay.amount;
+				  
+				    })
+				    callback(null,total)
+			   
+			 	 })
+		    },
+
+		    function(callback) {
+		        payment.find({'$where': 'this.date.toJSON().slice(0, 10) == "'+today+'"'})
+		        	   .exec(function(err,doc){
+		  	
+				    if(err)  {
+				      callback(err)
+				    }
+					
+				    callback(null,doc)
+			   
+			 	 })
+		    }
+
+		],
+			function(err, results) {
+			    if (err) {
+			        
+			        return res.send(500, 'Internal Server Error')
+			    }
+			 
+			    if (results == null || results[0] == null) {
+			        return res.send(400);
+			    }
+			 
+			    saldoTotalEntradas = results[0]
+				saldoTotalSalidas = results[1]
+
+				saldoTotalCaja = saldoTotalEntradas - saldoTotalSalidas
 
 
+			    res.render('caja',{
+			    	totalEntradas: saldoTotalEntradas,
+					totalCaja: saldoTotalCaja,
+					totalSalidas: saldoTotalSalidas,
+					entradas: results[2],
+				})
+			}
+		)
+	}
+})
+
+app.post('/payment',function(req,res){
+	if(!res.locals.user)
+	{
+		res.redirect('/login')
+	}
+	else
+	{
+		payment.create({
+			
+			createdBy: res.locals.user,
+			tipepay: req.body.tipoentrada, 
+			amount: req.body.monto,
+			description: req.body.descripcion,
+
+		},function(err,sch){
+			if(err)
+			{
+				return res.send(500, 'Internal Server Error')
+			}
+		})
+		res.redirect('/payment')		
+	}
+})
 
 function instalador()
 {
@@ -1384,7 +1579,7 @@ app.listen(3000, function () {
 // Status.collection.remove();
 // ToDo.collection.remove();
 // Cities.collection.remove();
-//Profile.collection.remove();
+// Profile.collection.remove();
 
     // instalador()
 	console.log('Example app listening on port 3000! ' + new Date())
