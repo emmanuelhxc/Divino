@@ -405,9 +405,6 @@ app.post('/sign-up', function(req, res, next){
 			if(err){
 				return res.send(500, 'Internal Server Error')
 			}
-
-			
-
 				User.create({
 					username: req.body.username,
 					password: hashedPassword,
@@ -421,8 +418,6 @@ app.post('/sign-up', function(req, res, next){
 
 					req.session.userId = doc.uuid
 					res.redirect('/')
-				
-				
 			})
 		})
 	})
@@ -457,7 +452,6 @@ app.post('/login', function (req, res){
 })
 
 app.get('/main',function(req,res){
-
 
 	if(!res.locals.user)
 	{
@@ -977,22 +971,22 @@ app.post('/appointment/:uuid', upload.single('fileinput'),function(req,res){
 					}					
 				})	
 
-				if(req.body.advancePay > 0)
-					{
-						payment.create({
-							createdBy: res.locals.user,
-							tipepay: 1, //1=entrada  0=salida
-							amount: req.body.advancePay,
-							description: 'Anticipo cita ' + res.locals.user.displayName,
+				if(doc.advancepay > 0)
+				{
+					payment.create({
+						createdBy: res.locals.user,
+						tipepay: 1, //1=entrada  0=salida
+						amount: doc.advancepay,
+						description: 'Anticipo cita ' + res.locals.user.displayName,
 
-						},function(err,doc){
-							if(err)
-							{
-								return res.send(500,'Internal Server Error');
-							}
-								
-						})
-					}
+					},function(err,doc){
+						if(err)
+						{
+							return res.send(500,'Internal Server Error');
+						}
+							
+					})
+				}
 
 				res.redirect('/')
 
@@ -1124,25 +1118,24 @@ app.post('/add-appointment',upload.single('fileinput'),function(req,res){
 					{
 						return res.send(500,'Internal Server Error');
 					}
-					
+
+					if(doc.advancepay > 0)
+					{
+						payment.create({
+							createdBy: res.locals.user,
+							tipepay: 1, //1=entrada  0=salida
+							amount: doc.advancepay,
+							description: 'Anticipo cita ' + res.locals.user.displayName,
+
+						},function(err,doc){
+							if(err)
+							{
+								return res.send(500,'Internal Server Error');
+							}
+						})
+					}
 				})
 
-				if(req.body.advancePay > 0)
-				{
-					payment.create({
-						createdBy: res.locals.user,
-						tipepay: 1, //1=entrada  0=salida
-						amount: req.body.advancePay,
-						description: 'Anticipo cita ' + res.locals.user.displayName,
-
-					},function(err,doc){
-						if(err)
-						{
-							return res.send(500,'Internal Server Error');
-						}
-						res.redirect('/')		
-					})
-				}
 				res.redirect('/')
 			}
 			else
@@ -1186,13 +1179,12 @@ app.post('/add-appointment',upload.single('fileinput'),function(req,res){
 							return res.send(500,'Internal Server Error');
 						}
 						
-						if(doc.advancePay > 0)
+						if(doc.advancepay > 0)
 						{
-
 							payment.create({
 								createdBy: res.locals.user,
 								tipepay: 1, //1=entrada  0=salida
-								amount: doc.advancePay,
+								amount: doc.advancepay,
 								description: 'Anticipo cita ' + res.locals.user.displayName,
 
 							},function(err,doc){
@@ -1200,18 +1192,16 @@ app.post('/add-appointment',upload.single('fileinput'),function(req,res){
 								{
 									return res.send(500,'Internal Server Error');
 								}
-								res.redirect('/')		
 							})
 						}
-
-						res.redirect('/')	
-						
 					})
 					
 				})	
+
+				res.redirect('/')	
 			}
 
-		 })
+		})
 	}
 })
 
@@ -1365,8 +1355,6 @@ app.get('/payment',function(req,res){
 	{
 		var today = moment().format('YYYY-MM-DD')
 
-		
-
 		var saldoTotalCaja = 0
 		var saldoTotalEntradas = 0
 		var saldoTotalSalidas = 0
@@ -1383,9 +1371,11 @@ app.get('/payment',function(req,res){
 				    var total = 0
 
 				    doc.forEach(function(pay){
-				      total += total + pay.amount;
-				  
+
+				      total += pay.amount;
+				     
 				    })
+
 				    callback(null,total)
 			   
 			 	 })
@@ -1399,10 +1389,13 @@ app.get('/payment',function(req,res){
 				    if(err)  {
 				      callback(err)
 				    }
+
+				    
 					var total = 0
 				    doc.forEach(function(pay){
-				      total += total + pay.amount;
-				  
+				
+				      total +=  pay.amount;
+				
 				    })
 				    callback(null,total)
 			   
@@ -1437,6 +1430,10 @@ app.get('/payment',function(req,res){
 				saldoTotalSalidas = results[1]
 
 				saldoTotalCaja = saldoTotalEntradas - saldoTotalSalidas
+
+				// console.log(saldoTotalEntradas)
+				// console.log(saldoTotalSalidas)
+				// console.log(saldoTotalCaja)
 
 
 			    res.render('caja',{
