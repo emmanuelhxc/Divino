@@ -130,6 +130,19 @@ var paymentSchema = Schema({
 
 var payment = mongoose.model('payment', paymentSchema)
 
+
+var todolistSchema = Schema({
+
+	date: Date,
+	message: String,
+	tattooer: {type:Schema.Types.ObjectId, ref:'User'},
+	createdBy: {type:Schema.Types.ObjectId, ref:'User'},
+	uuid : {type: String, default: uuid.v4}
+
+})
+
+var toDoList = mongoose.model('todoList', todolistSchema)
+
 var citySchema = Schema({
 	name: String,
 	createdBy: {type:Schema.Types.ObjectId, ref:'User'},
@@ -988,6 +1001,28 @@ app.post('/appointment/:uuid', upload.single('fileinput'),function(req,res){
 					})
 				}
 
+				if(doc.comi > 0)
+				{
+					console.log('si')
+					var total = req.body.price
+					var comi = req.body.comi
+					var totalsalida = total * ((100 - comi ) / 100)
+
+					payment.create({
+						createdBy: res.locals.user,
+						tipepay: 0, //1=entrada  0=salida
+						amount: totalsalida,
+						description: 'Pago Comisión Tatuaje ' + res.locals.user.displayName,
+
+					},function(err,doc){
+						if(err)
+						{
+							return res.send(500,'Internal Server Error');
+						}
+							
+					})
+				}
+
 				res.redirect('/')
 
 				
@@ -1032,23 +1067,45 @@ app.post('/appointment/:uuid', upload.single('fileinput'),function(req,res){
 					})	
 
 					if(req.body.advancePay > 0)
-						{
-							payment.create({
-								createdBy: res.locals.user,
-								tipepay: 1, //1=entrada  0=salida
-								amount: req.body.advancePay,
-								description: 'Anticipo cita ' + res.locals.user.displayName,
+					{
+						payment.create({
+							createdBy: res.locals.user,
+							tipepay: 1, //1=entrada  0=salida
+							amount: req.body.advancePay,
+							description: 'Anticipo cita ' + res.locals.user.displayName,
 
-							},function(err,doc){
-								if(err)
-								{
-									return res.send(500,'Internal Server Error');
-								}
-									
-							})
-						}
+						},function(err,doc){
+							if(err)
+							{
+								return res.send(500,'Internal Server Error');
+							}
+								
+						})
+					}
 
-						res.redirect('/')
+					if(req.body.comi > 0)
+					{
+						console.log('si entro')
+						var total = req.body.price
+						var comi = req.body.comi
+						var totalsalida = total * ((100 - comi ) / 100)
+
+						payment.create({
+							createdBy: res.locals.user,
+							tipepay: 0, //1=entrada  0=salida
+							amount: totalsalida,
+							description: 'Pago Comisión Tatuaje ' + user.displayName,
+
+						},function(err,doc){
+							if(err)
+							{
+								return res.send(500,'Internal Server Error');
+							}
+								
+						})
+					}
+
+					res.redirect('/')
 
 				})	
 			}
@@ -1134,6 +1191,28 @@ app.post('/add-appointment',upload.single('fileinput'),function(req,res){
 							}
 						})
 					}
+
+					if(doc.comi > 0)
+					{
+						
+						var total = req.body.price
+						var comi = req.body.comi
+						var totalsalida = total * ((100 - comi ) / 100)
+
+						payment.create({
+							createdBy: res.locals.user,
+							tipepay: 0, //1=entrada  0=salida
+							amount: total - totalsalida,
+							description: 'Pago Comisión Tatuaje ' + res.locals.user.displayName,
+
+						},function(err,doc){
+							if(err)
+							{
+								return res.send(500,'Internal Server Error');
+							}
+								
+						})
+					}
 				})
 
 				res.redirect('/')
@@ -1185,13 +1264,35 @@ app.post('/add-appointment',upload.single('fileinput'),function(req,res){
 								createdBy: res.locals.user,
 								tipepay: 1, //1=entrada  0=salida
 								amount: doc.advancepay,
-								description: 'Anticipo cita ' + res.locals.user.displayName,
+								description: 'Anticipo cita ' + user.displayName,
 
 							},function(err,doc){
 								if(err)
 								{
 									return res.send(500,'Internal Server Error');
 								}
+							})
+						}
+
+						if(doc.comi > 0)
+						{
+							
+							var total = req.body.price
+							var comi = req.body.comi
+							var totalsalida = total * ((100 - comi ) / 100)
+
+							payment.create({
+								createdBy: res.locals.user,
+								tipepay: 0, //1=entrada  0=salida
+								amount: total - totalsalida,
+								description: 'Pago Comisión Tatuaje ' + res.locals.user.displayName,
+
+							},function(err,doc){
+								if(err)
+								{
+									return res.send(500,'Internal Server Error');
+								}
+									
 							})
 						}
 					})
@@ -1363,7 +1464,7 @@ app.get('/payment',function(req,res){
 		 
 		    //entradas
 		    function(callback) {
-		        payment.find({'tipepay': 1 , '$where': 'this.date.toJSON().slice(0, 10) == "'+today+'"'  }).exec(function(err,doc){
+		        payment.find({'tipepay': 1 , '$where': 'this.date.toJSON().slice(0, 10) == "'+ today +'"'  }).exec(function(err,doc){
 		  	
 				    if(err)  {
 				      callback(err)
@@ -1403,7 +1504,7 @@ app.get('/payment',function(req,res){
 		    },
 
 		    function(callback) {
-		        payment.find({'$where': 'this.date.toJSON().slice(0, 10) == "'+today+'"'})
+		        payment.find({'$where': 'this.date.toJSON().slice(0, 10) == "' + today + '"'})
 		        	   .exec(function(err,doc){
 		  	
 				    if(err)  {
@@ -1468,6 +1569,102 @@ app.post('/payment',function(req,res){
 			}
 		})
 		res.redirect('/payment')		
+	}
+})
+
+app.get('/todolist',function(req,res){
+	if(!res.locals.user)
+	{
+		res.redirect('/login')
+	}
+	else
+	{
+		var today = moment().format('YYYY-MM-DD')
+		Profile.findOne({profilecode: 2},function(err,profile){
+
+			if(err)
+			{
+				return res.send(500,'Internal Server Error');
+			}
+
+			if(!profile)
+			{
+				return res.send(400,'Not Found');
+			}
+
+			
+			User.find({profile : profile},function(err,users){
+
+				if(err)
+				{
+					return res.send(500,'Internal Server Error');
+				}
+				if(!users)
+				{
+					return res.send(404, 'Not found')
+				}
+
+				toDoList.find({ '$where': 'this.date.toJSON().slice(0, 10) == "' + today + '"'    })
+					.populate('createdBy')
+					.exec(function(err,todos){
+					if(err)
+					{
+						return res.send(500,'Internal Server Error');
+					}
+					if(!todos)
+					{
+						return res.send(404, 'Not found')
+					}
+					console.log(todos.createdBy)
+
+					res.render('addtodolist',{
+						todos: todos,
+						users:users
+					})	
+				})
+			})
+		})
+	}
+})
+
+app.post('/addtodolist',function(req,res){
+	if(!res.locals.user)
+	{
+		res.redirect('/login')
+	}
+	else
+	{
+
+		var a = new Date(req.body.dateStart)
+
+		User.findOne({uuid: req.body.tattooer})
+			.populate('profile')
+			.exec(function(err, user){
+				if(err){
+					return res.send(500, 'Internal Server Error')
+				}
+				if(!user){
+					return res.send(400, 'Not Found')
+				}
+
+					toDoList.create({
+
+						date: a,
+						message: req.body.descripcion,
+						tattooer: user,
+						createdBy: res.locals.user,
+
+
+					},function(err,sch){
+						if(err)
+						{
+							return res.send(500, 'Internal Server Error')
+						}
+					
+					})
+				})
+		res.redirect('/')
+	
 	}
 })
 
