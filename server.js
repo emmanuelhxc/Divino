@@ -1579,7 +1579,7 @@ app.get('/todolist',function(req,res){
 	}
 	else
 	{
-		var today = moment().format('YYYY-MM-DD')
+		
 		Profile.findOne({profilecode: 2},function(err,profile){
 
 			if(err)
@@ -1604,7 +1604,7 @@ app.get('/todolist',function(req,res){
 					return res.send(404, 'Not found')
 				}
 
-				toDoList.find({ '$where': 'this.date.toJSON().slice(0, 10) == "' + today + '"'    })
+				toDoList.find({ })
 					.populate('createdBy')
 					.exec(function(err,todos){
 					if(err)
