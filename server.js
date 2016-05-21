@@ -1285,7 +1285,7 @@ app.post('/add-appointment',upload.single('fileinput'),function(req,res){
 								createdBy: res.locals.user,
 								tipepay: 0, //1=entrada  0=salida
 								amount: total - totalsalida,
-								description: 'Pago Comisión Tatuaje ' + res.locals.user.displayName,
+								description: 'Pago Comisión Tatuaje ' + user.displayName,
 
 							},function(err,doc){
 								if(err)
