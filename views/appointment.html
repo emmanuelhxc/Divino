@@ -3,7 +3,7 @@
 
         <!-- VENDORS -->
        <!--  <link href="/vendors/bower_components/animate.css/animate.min.css" rel="stylesheet">
-        <link href="/vendors/bower_components/bootstrap-sweetalert/lib/sweet-alert.css" rel="stylesheet">
+        
         <link href="/vendors/bower_components/material-design-iconic-font/dist/css/material-design-iconic-font.min.css" rel="stylesheet">
         <link href="/vendors/bower_components/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.min.css" rel="stylesheet">        
         
@@ -18,7 +18,8 @@
         -->
         <!-- <link href="/css/app.min.1.css" rel="stylesheet">
         <link href="/css/app.min.2.css" rel="stylesheet"> -->
-
+        
+        <link href="/vendors/bower_components/bootstrap-sweetalert/lib/sweet-alert.css" rel="stylesheet">
         <link href="/vendors/bower_components/bootstrap-select/dist/css/bootstrap-select.css" rel="stylesheet">
         <link href="/vendors/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
 {% block content %}
@@ -125,11 +126,13 @@
                         <div class="input-group fg-float m-b-30">
                             <span class="input-group-addon"><i class="zmdi zmdi-money"></i></span>
                             <div class="fg-line">
-                                 <input type="text" name="price" class="form-control input-lg">
+                                 <input type="text" name="price" class="form-control input-lg" id="txtprice">
                                 <label class="fg-label">Precio</label>
                             </div>
                         </div>
                     </div>   
+
+                    {% if user.profile.profilecode === 1 %}
 
                     <div class="col-sm-4">
                         <div class="input-group fg-float m-b-30">
@@ -151,22 +154,21 @@
                         </div>
                     </div> 
 
+                    {% endif %}
                     
-                    <div class="col-sm-6 m-b-25">
+                    <div class="col-sm-6 m-b-25" >
                         <p class="f-500 m-b-15 c-black">Tipo de Pago</p>
                            
-                       <select class="selectpicker" name="typePay">
+                        <select class="selectpicker" name="typePay" id="ddltypepay">
                             
-                            <option value="1">Efectivo</option>
+                            <option value="1" selected="true">Efectivo</option>
                             <option value="2">Tarjeta</option>
                             
                         </select>
                     
                     </div>
-                        
-                   
 
-                     {% if user.profile.profilecode === 1 %}
+                    {% if user.profile.profilecode === 1 %}
 
                         
                         <div class="col-sm-6 m-b-25">
@@ -183,11 +185,12 @@
                     {% endif %}
 
 
-                    <div class="col-sm-6 m-b-25">
+                    <div class="col-sm-6 m-b-25" id="tipocobro" style="display:none;>
                         <p class="f-500 m-b-15 c-black">Tipo de Cobro</p>
                            
-                       <select class="selectpicker" name="meses">
+                       <select class="selectpicker" name="meses" id='ddltypecharge'>
                             
+                            <option value="-1" selected="selected">Seleccionar</option>
                             <option value="0">Contado</option>
                             <option value="3">3 Meses</option>
                             <option value="6">6 Meses</option>
@@ -196,6 +199,53 @@
                             
                         </select>
                     
+                    </div>
+
+                    <div class="col-sm-6 m-b-25" id="tblcomisiones" style="display:none;"">
+                                
+                         <div class="card-body table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Condicion de Pago</th>
+                                        <th>%</th>
+                                        <th>Monto a cobrar</th> 
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Contado</td>
+                                        <td>4.18</td>
+                                        <td><label id="lblcontado"></label></td>
+
+                                    </tr>
+                                    <tr>
+                                        <td>3 Meses</td>
+                                        <td>9.40</td>
+                                        <td><label id="lbl3meses"></label></td>
+
+                                    </tr>  
+                                    <tr>
+                                        <td>6 Meses</td>
+                                        <td>12.88</td>
+                                        <td><label id="lbl6meses"></label></td>
+
+                                    </tr>  
+                                    <tr>
+                                        <td>9 Meses</td>
+                                        <td>15.66</td>
+                                        <td><label id="lbl9meses"></label></td>
+
+                                    </tr> 
+                                    <tr>
+                                        <td>12 Meses</td>
+                                        <td>18.04</td>
+                                        <td><label id="lbl12meses"></label></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
                     </div>
 
                     <div class="col-sm-12">
@@ -219,7 +269,8 @@
                                 <button class="btn btn-default waves-effect" id="btn-cancel">Cancelar</button>
                             </div>
                         </div>
-                    </div>    
+                    </div>
+
                 </form>
             </div>
         </div>
@@ -234,7 +285,7 @@
     <script src="/vendors/bower_components/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.concat.min.js"></script>
     <script src="/vendors/bower_components/Waves/dist/waves.min.js"></script>
     <script src="/vendors/bootstrap-growl/bootstrap-growl.min.js"></script>
-    <script src="/vendors/bower_components/bootstrap-sweetalert/lib/sweet-alert.min.js"></script>
+    
 
    
   
@@ -261,6 +312,7 @@
     <script src="/vendors/bower_components/bootstrap-select/dist/js/bootstrap-select.js"></script>
     <script src="/vendors/bower_components/moment/min/moment.min.js"></script>
     <script src="/vendors/bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/vendors/bower_components/bootstrap-sweetalert/lib/sweet-alert.min.js"></script>
     
     <!-- <script src="/js/functions.js"></script> -->
 
@@ -268,27 +320,54 @@
 
 
 <script type="text/javascript">
+
+
+
     
     $('#btn-cancel').click(function(event){
-        event.preventDefault();
-        window.location.href = '/'; 
+        event.preventDefault()
+        window.location.href = '/'
     })
-
-   
 
     var disdates = [
 
-            {% for d in daysOff %}
-                   
-                      "{{d}}"  ,
+        {% for d in daysOff %}
+               
+                  "{{d}}"  ,
 
-            {% endfor %}
+        {% endfor %}
     ]
+
+    $('#ddltypepay').change(function(){
+
+        if($(this).val() === '2')
+        {
+            $('#ddltypecharge').val('-1')
+            $('#tipocobro').show('slow')
+            $('#tblcomisiones').show('slow')
+
+            calcularclip()
+        }
+        else
+        {
+            $('#ddltypecharge').val('-1')
+            $('#tipocobro').hide('slow')
+            $('#tblcomisiones').hide('slow')
+        }
+
+    })
+
+    $('#txtprice').blur(function(){
+
+
+        calcularclip()
+    })
   
 
     $('#txtfecha').datetimepicker({
         minDate: new Date(),
         disabledDates: disdates,
+        daysOfWeekDisabled: [{{ user.nonWorkingDays }}]
         // beforeShowDay: DisableSpecificDates
     });
 
@@ -301,7 +380,38 @@
     // });
 
 
-    
+    function calcularclip(){
+
+        valTotal = parseInt($('#txtprice').val())
+            
+
+            if(!isNaN(valTotal)){
+
+                var cont = (valTotal + ((valTotal * 4.18).toFixed(2) / 100)).toFixed(2)
+                var tresmes = (valTotal + ((valTotal *  9.40).toFixed(2) / 100)).toFixed(2)
+                var sesimes = (valTotal + ((valTotal * 12.88).toFixed(2) / 100)).toFixed(2)
+                var nuevemes = (valTotal + ((valTotal * 15.66).toFixed(2) / 100)).toFixed(2)
+                var docemes = (valTotal + ((valTotal * 18.04).toFixed(2) / 100)).toFixed(2)
+
+
+                $('#lblcontado').text('$ ' + cont)
+                $('#lbl3meses').text('$ ' + tresmes)
+                $('#lbl6meses').text('$ ' + sesimes)
+                $('#lbl9meses').text('$ ' + nuevemes)
+                $('#lbl12meses').text('$ ' + docemes)
+
+
+              
+
+            }
+            else
+            {
+
+                $('#ddltypecharge').val('-1')
+                swal('Precio','Debes ingresar un precio total del tatuaje','warning')
+
+            }
+    }
 
 
 </script>

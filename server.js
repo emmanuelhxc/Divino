@@ -21,12 +21,8 @@ var storage = multer.diskStorage({
 	},
 	limits:{fileSize: 10000000, files:1}	
 })
-
-
 	
 var upload = multer({storage:storage})
-
-
 var session = require('express-session')
 var MongoStore = require('express-session-mongo')
 var flash = require('flash')
@@ -45,6 +41,7 @@ var userSchema = Schema({
  	createdOn: {type:Date, default: new Date()},
  	profile: {type:Schema.Types.ObjectId, ref:'Profile'},
  	color: String,
+ 	nonWorkingDays: String,
 	uuid : {type: String, default: uuid.v4}
 })
 
@@ -53,7 +50,7 @@ var User = mongoose.model('User', userSchema)
 var profileSchema = Schema({
 
 	profilename: String,
-	profilecode: Number,
+	profilecode: Number,// 1 admin // 2usuario
 	createdOn: {type:Date, default: new Date()},
 	uuid: {type: String, default: uuid.v4}
 
@@ -85,7 +82,7 @@ var appointmentSchema = Schema({
 	customer: {type:Schema.Types.ObjectId, ref:'Customer'},
 	modifiedOn: Date,
 	price: Number,
-	advancepay: Number,
+	advancepay: {type: Number, default: 0},
 	typePay: Number,
 	comi: Number,
 	status: {type:Schema.Types.ObjectId, ref:'Status'},
@@ -121,7 +118,10 @@ var paymentSchema = Schema({
 
 	date: { type:Date , default: new Date() },
 	createdBy: {type:Schema.Types.ObjectId, ref:'User'},
-	tipepay: Number, //1=entrada  0=salida
+	createdFor: {type:Schema.Types.ObjectId, ref:'User'},
+	appointment: {type:Schema.Types.ObjectId, ref:'appointment'},
+	typepay: Number, //1=entrada  0=salida
+	typecharge: Number,//1=efectivo  2=tarjeta
 	amount: Number,
 	description: String,
 	uuid : {type: String, default: uuid.v4}
@@ -332,18 +332,32 @@ app.get('/',function (req, res) {
 						'allDay': Boolean,
 						'className': String,
 						'id': uuid.v4,
+						'end': Date, 
+					 	'customer': String, 
+					 	'customerPhoneNumber' : String,
+					 	'customerMail' : String,
+					 	'tattooerName' : String,
+					 	'titletattoo' : String,
+					 	'description' : String,
 					}
 					
 					 app.forEach(function(appo){
-				
 
+				
 						var myObj = new Object();
 
-					 	myObj.title = appo.createdBy.displayName + ' '+  moment(appo.dateStart).format('h:mm') + ' - ' +  moment(appo.dateEnd).format('h:mm')  ,
+					 	myObj.title = appo.createdBy.displayName + ' ' +  moment(appo.dateStart).format('h:mm') + ' - ' +  moment(appo.dateEnd).format('h:mm')  ,
 					 	myObj.start = appo.dateStart.toDateString(),
+					 	myObj.end = appo.dateEnd.toDateString(),
 					 	myObj.id = appo.uuid,
 					 	myObj.allDay = false,
-					 	myObj.className = 'bgm-cyan'
+					 	myObj.className = appo.createdBy.color,
+					 	myObj.customer = appo.customer.name, 
+					 	myObj.customerPhoneNumber = appo.customer.telephone,
+					 	myObj.customerMail = appo.customer.email,
+					 	myObj.tattooerName = appo.createdBy.displayName,
+					 	myObj.titletattoo = appo.title,
+					 	myObj.description = appo.description
 
 
 					 	citas.push(myObj)
@@ -361,7 +375,6 @@ app.get('/',function (req, res) {
 		}
 	}
 })
-
 
 app.get('/sign-up', function (req, res){
 	var error = res.locals.flash.pop()
@@ -481,8 +494,6 @@ app.get('/main',function(req,res){
 	}
 })
 
-
-
 app.get('/add-listing',function(req,res){
 
 	if(!res.locals.user)
@@ -500,7 +511,6 @@ app.get('/add-listing',function(req,res){
 	}
 })
 	
-
 app.get('/city/:name',function(req,res){
 
 if(!res.locals.user)
@@ -671,7 +681,6 @@ app.post('/add-to-do',function(req,res){
 
 })
 
-
 app.get('/users/:uuid',function(req,res){
 
 	if(!res.locals.user)
@@ -791,7 +800,8 @@ app.get('/add-appointment',function(req,res){
 
 										
 					res.render('appointment',{
-						users:users
+						users: users,
+						user: res.locals.user
 					})
 				})
 			})
@@ -836,8 +846,10 @@ app.get('/add-appointment',function(req,res){
 
 				  	})
 				  	
+
 					res.render('appointment',{
-						daysOff: days
+						daysOff: days,
+						user: res.locals.user
 					})
 				})
 			})
@@ -883,6 +895,7 @@ app.get('/appointment/:uuid',function(req,res){
 					Appointment
 					.findOne({uuid:req.params.uuid})
 					.populate('customer')
+					.populate('createdBy')
 					.exec(function(err,appointment){
 
 						if(err)
@@ -974,9 +987,9 @@ app.post('/appointment/:uuid', upload.single('fileinput'),function(req,res){
 				doc.dateEnd = dateEnd,
 				doc.imgurl = imgpath,
 				doc.price = req.body.price,
-				doc.advancepay = req.body.advancePay,
 				doc.typePay = req.body.typePay,
-				doc.comi = req.body.comi
+				// doc.comi = req.body.comi,
+				// doc.advancepay = req.body.advancePay
 
 				doc.save(function (err) {
 					if(err){
@@ -984,44 +997,45 @@ app.post('/appointment/:uuid', upload.single('fileinput'),function(req,res){
 					}					
 				})	
 
-				if(doc.advancepay > 0)
-				{
-					payment.create({
-						createdBy: res.locals.user,
-						tipepay: 1, //1=entrada  0=salida
-						amount: doc.advancepay,
-						description: 'Anticipo cita ' + res.locals.user.displayName,
+				// if(doc.advancepay > 0)
+				// {
+				// 	payment.create({
+				// 		createdBy: res.locals.user,
+				// 		typepay: 1, //1=entrada  0=salida
+				// 		amount: doc.advancepay,
+				// 		description: 'Anticipo cita ' + res.locals.user.displayName,
 
-					},function(err,doc){
-						if(err)
-						{
-							return res.send(500,'Internal Server Error');
-						}
+				// 	},function(err,doc){
+				// 		if(err)
+				// 		{
+				// 			return res.send(500,'Internal Server Error');
+				// 		}
 							
-					})
-				}
+				// 	})
+				// }
 
-				if(doc.comi > 0)
-				{
-					console.log('si')
-					var total = req.body.price
-					var comi = req.body.comi
-					var totalsalida = total * ((100 - comi ) / 100)
+				// if(doc.comi > 0)
+				// {
+					
+				// 	var anticipo = req.body.advancePay
+				// 	var total = req.body.price
+				// 	var comi = req.body.comi
+				// 	var totalsalida = (total - anticipo) * ((100 - comi ) / 100)
 
-					payment.create({
-						createdBy: res.locals.user,
-						tipepay: 0, //1=entrada  0=salida
-						amount: totalsalida,
-						description: 'Pago Comisión Tatuaje ' + res.locals.user.displayName,
+				// 	payment.create({
+				// 		createdBy: res.locals.user,
+				// 		typepay: 0, //1=entrada  0=salida
+				// 		amount: total - totalsalida,
+				// 		description: 'Pago Comisión Tatuaje ' + res.locals.user.displayName,
 
-					},function(err,doc){
-						if(err)
-						{
-							return res.send(500,'Internal Server Error');
-						}
+				// 	},function(err,doc){
+				// 		if(err)
+				// 		{
+				// 			return res.send(500,'Internal Server Error');
+				// 		}
 							
-					})
-				}
+				// 	})
+				// }
 
 				res.redirect('/')
 
@@ -1055,9 +1069,9 @@ app.post('/appointment/:uuid', upload.single('fileinput'),function(req,res){
 					doc.dateEnd = dateEnd,
 					doc.imgurl = imgpath,
 					doc.price = req.body.price,
-					doc.advancepay = req.body.advancePay,
 					doc.typePay = req.body.typePay,
-					doc.comi = req.body.comi
+					doc.comi = req.body.comi,
+					doc.advancepay = req.body.advancePay
 
 					doc.save(function (err) {
 						if(err){
@@ -1066,44 +1080,71 @@ app.post('/appointment/:uuid', upload.single('fileinput'),function(req,res){
 						
 					})	
 
-					if(req.body.advancePay > 0)
-					{
-						payment.create({
-							createdBy: res.locals.user,
-							tipepay: 1, //1=entrada  0=salida
-							amount: req.body.advancePay,
-							description: 'Anticipo cita ' + res.locals.user.displayName,
+					// if(req.body.advancePay > 0)
+					// {
+					// 	payment.create({
+					// 		createdBy: res.locals.user,
+					// 		typepay: 1, //1=entrada  0=salida
+					// 		typecharge: req.body.typePay,
+					// 		amount: req.body.advancePay,
+					// 		description: 'Anticipo cita ' + res.locals.user.displayName,
 
-						},function(err,doc){
-							if(err)
-							{
-								return res.send(500,'Internal Server Error');
-							}
+					// 	},function(err,doc){
+					// 		if(err)
+					// 		{
+					// 			return res.send(500,'Internal Server Error');
+					// 		}
 								
-						})
-					}
+					// 	})
+					// }
 
-					if(req.body.comi > 0)
-					{
-						console.log('si entro')
-						var total = req.body.price
-						var comi = req.body.comi
-						var totalsalida = total * ((100 - comi ) / 100)
+					// if(req.body.comi > 0)
+					// {
+					// 	var anticipo = req.body.advancePay
+					// 	var total = req.body.price
+					// 	var comi = req.body.comi
+					// 	var totalsalida = (total - anticipo) * ((100 - comi ) / 100)
 
-						payment.create({
-							createdBy: res.locals.user,
-							tipepay: 0, //1=entrada  0=salida
-							amount: totalsalida,
-							description: 'Pago Comisión Tatuaje ' + user.displayName,
+					// 	payment.create({
+					// 		date: doc.dateStart,
+					// 		createdBy: res.locals.user,
+					// 		typepay: 0, //1=entrada  0=salida
+					// 		typecharge: req.body.typePay,
+					// 		amount: total - totalsalida,
+					// 		description: 'Pago Comisión Tatuaje ' + user.displayName,
 
-						},function(err,doc){
-							if(err)
-							{
-								return res.send(500,'Internal Server Error');
-							}
+					// 	},function(err,doc){
+					// 		if(err)
+					// 		{
+					// 			return res.send(500,'Internal Server Error');
+					// 		}
 								
-						})
-					}
+					// 	})
+					// }
+					// else
+					// {
+					// 	var anticipo = req.body.advancePay
+					// 	var total = req.body.price
+					// 	var totalsalida = total - anticipo;
+
+					// 	payment.create({
+					// 		date: doc.dateStart,
+					// 		appointment: doc,
+					// 		createdBy: res.locals.user,
+					// 		typepay: 0, //1=entrada  0=salida
+					// 		typecharge: req.body.typePay,
+					// 		amount: totalsalida,
+					// 		description: 'Pago Comisión de Tatuaje para' + res.locals.user.displayName,
+
+					// 	},function(err,doc){
+					// 		if(err)
+					// 		{
+					// 			return res.send(500,'Internal Server Error');
+					// 		}
+								
+					// 	})
+					// }
+
 
 					res.redirect('/')
 
@@ -1114,7 +1155,6 @@ app.post('/appointment/:uuid', upload.single('fileinput'),function(req,res){
 	}
 
 })
-
 
 app.post('/add-appointment',upload.single('fileinput'),function(req,res){
 	if(!res.locals.user)
@@ -1152,7 +1192,6 @@ app.post('/add-appointment',upload.single('fileinput'),function(req,res){
 				{	
 					imgpath = req.file.path
 				}
-
 				
 				Appointment.create({
 
@@ -1165,9 +1204,9 @@ app.post('/add-appointment',upload.single('fileinput'),function(req,res){
 					dateStart: new Date(req.body.date),
 					dateEnd: dateEnd,
 					price: req.body.price,
-					advancepay: req.body.advancePay,
 					typePay: req.body.typePay,
-					comi: req.body.comi
+					// comi: req.body.comi,
+					// advancepay: req.body.advancePay
 					
 					
 				},function(err,doc){
@@ -1176,43 +1215,93 @@ app.post('/add-appointment',upload.single('fileinput'),function(req,res){
 						return res.send(500,'Internal Server Error');
 					}
 
-					if(doc.advancepay > 0)
-					{
-						payment.create({
-							createdBy: res.locals.user,
-							tipepay: 1, //1=entrada  0=salida
-							amount: doc.advancepay,
-							description: 'Anticipo cita ' + res.locals.user.displayName,
+					// if(doc.advancepay > 0)
+					// {
+					// 	payment.create({
+					// 		appointment: doc,
+					// 		createdBy: res.locals.user,
+					// 		typepay: 1, //1=entrada  0=salida
+					// 		amount: doc.advancepay,
+					// 		description: 'Anticipo cita ' + res.locals.user.displayName,
 
-						},function(err,doc){
-							if(err)
-							{
-								return res.send(500,'Internal Server Error');
-							}
-						})
-					}
+					// 	},function(err,doc){
+					// 		if(err)
+					// 		{
+					// 			return res.send(500,'Internal Server Error');
+					// 		}
+					// 	})
+					// }
+					
+					// if(res.locals.user.displayName === 'jazz')
+					// {
+					
+					// 	var anticipo = doc.advancepay
+					// 	var total = doc.price 
+					// 	var comi = doc.comi
+					// 	var totalsalida = (total - anticipo) * ((100 - comi ) / 100)
 
-					if(doc.comi > 0)
-					{
-						
-						var total = req.body.price
-						var comi = req.body.comi
-						var totalsalida = total * ((100 - comi ) / 100)
+					// 	payment.create({
+					// 		date: doc.dateStart,
+					// 		appointment: doc,
+					// 		createdBy: res.locals.user,
+					// 		typepay: 0, //1=entrada  0=salida
+					// 		amount: total - totalsalida,
+					// 		description: 'Pago Comisión Tatuaje ' + res.locals.user.displayName,
 
-						payment.create({
-							createdBy: res.locals.user,
-							tipepay: 0, //1=entrada  0=salida
-							amount: total - totalsalida,
-							description: 'Pago Comisión Tatuaje ' + res.locals.user.displayName,
-
-						},function(err,doc){
-							if(err)
-							{
-								return res.send(500,'Internal Server Error');
-							}
+					// 	},function(err,doc){
+					// 		if(err)
+					// 		{
+					// 			return res.send(500,'Internal Server Error');
+					// 		}
 								
-						})
-					}
+					// 	})
+					// }
+					// else if (doc.comi > 0)
+					// {
+					// 	var anticipo = doc.advancepay
+					// 	var total = doc.price 
+					// 	var comi = doc.comi
+					// 	var totalsalida = (total - anticipo) * ((100 - comi ) / 100)
+
+					// 	payment.create({
+					// 		date: doc.dateStart,
+					// 		appointment: doc,
+					// 		createdBy: res.locals.user,
+					// 		typepay: 0, //1=entrada  0=salida
+					// 		amount: total - totalsalida,
+					// 		description: 'Pago Comisión Tatuaje ' + res.locals.user.displayName,
+
+					// 	},function(err,doc){
+					// 		if(err)
+					// 		{
+					// 			return res.send(500,'Internal Server Error');
+					// 		}
+								
+					// 	})	
+
+					// }
+					// else
+					// {
+					// 	var anticipo = doc.advancepay
+					// 	var total = doc.price 
+					// 	var totalsalida = total - anticipo;
+
+					// 	payment.create({
+					// 		date: doc.dateStart,
+					// 		appointment: doc,
+					// 		createdBy: res.locals.user,
+					// 		typepay: 0, //1=entrada  0=salida
+					// 		amount: totalsalida,
+					// 		description: 'Pago Comisión de Tatuaje para' + res.locals.user.displayName,
+
+					// 	},function(err,doc){
+					// 		if(err)
+					// 		{
+					// 			return res.send(500,'Internal Server Error');
+					// 		}
+								
+					// 	})
+					// }
 				})
 
 				res.redirect('/')
@@ -1247,9 +1336,9 @@ app.post('/add-appointment',upload.single('fileinput'),function(req,res){
 						dateStart: new Date(req.body.date),
 						dateEnd: dateEnd,
 						price: req.body.price,
-						advancepay: req.body.advancePay,
 						typePay: req.body.typePay,
-						comi: req.body.comi
+						comi: req.body.comi,
+						advancepay: req.body.advancePay
 						
 						
 					},function(err,doc){
@@ -1258,41 +1347,23 @@ app.post('/add-appointment',upload.single('fileinput'),function(req,res){
 							return res.send(500,'Internal Server Error');
 						}
 						
+						// si tiene anticipo se genera la entrada por el importe del anticipo
 						if(doc.advancepay > 0)
 						{
 							payment.create({
+								appointment: doc,
 								createdBy: res.locals.user,
-								tipepay: 1, //1=entrada  0=salida
-								amount: doc.advancepay,
-								description: 'Anticipo cita ' + user.displayName,
+								createdFor: user,
+								typepay: 1, //1=entrada  0=salida
+								typecharge: req.body.typePay,
+								amount: doc.advancepay, 
+								description: 'Anticipo cita de '+ user.displayName,
 
 							},function(err,doc){
 								if(err)
 								{
 									return res.send(500,'Internal Server Error');
 								}
-							})
-						}
-
-						if(doc.comi > 0)
-						{
-							
-							var total = req.body.price
-							var comi = req.body.comi
-							var totalsalida = total * ((100 - comi ) / 100)
-
-							payment.create({
-								createdBy: res.locals.user,
-								tipepay: 0, //1=entrada  0=salida
-								amount: total - totalsalida,
-								description: 'Pago Comisión Tatuaje ' + user.displayName,
-
-							},function(err,doc){
-								if(err)
-								{
-									return res.send(500,'Internal Server Error');
-								}
-									
 							})
 						}
 					})
@@ -1347,6 +1418,8 @@ app.post('/addtat',function(req,res){
 					displayName: req.body.displayName,
 					profile: doc,
 					email: req.body.mail,
+					color: req.body.color,
+					nonWorkingDays: req.body.workingdays,
 				}, function(err, usr){
 					if(err){
 						return res.send(500, 'Internal Server Error')
@@ -1425,7 +1498,7 @@ app.post('/addschedule',function(req,res){
 
 
 				dates.forEach(function(fechas){
-					console.log(fechas)
+					
 
 					Schedule.create({
 
@@ -1464,7 +1537,9 @@ app.get('/payment',function(req,res){
 		 
 		    //entradas
 		    function(callback) {
-		        payment.find({'tipepay': 1 , '$where': 'this.date.toJSON().slice(0, 10) == "'+ today +'"'  }).exec(function(err,doc){
+		        payment.find({'typepay': 1 , '$where': 'this.date.toJSON().slice(0, 10) == "'+ today +'"'  })
+		        		.exec(function(err,doc){
+
 		  	
 				    if(err)  {
 				      callback(err)
@@ -1475,6 +1550,7 @@ app.get('/payment',function(req,res){
 
 				      total += pay.amount;
 				     
+				     
 				    })
 
 				    callback(null,total)
@@ -1484,7 +1560,7 @@ app.get('/payment',function(req,res){
 		 
 		    //salidas
 		    function(callback) {
-		        payment.find({'tipepay': 0, '$where': 'this.date.toJSON().slice(0, 10) == "'+today+'"'})
+		        payment.find({'typepay': 0, '$where': 'this.date.toJSON().slice(0, 10) == "'+today+'"'})
 		        	   .exec(function(err,doc){
 		  	
 				    if(err)  {
@@ -1502,9 +1578,10 @@ app.get('/payment',function(req,res){
 			   
 			 	 })
 		    },
-
+		    //todos los pagos
 		    function(callback) {
 		        payment.find({'$where': 'this.date.toJSON().slice(0, 10) == "' + today + '"'})
+		        // payment.find({})
 		        	   .exec(function(err,doc){
 		  	
 				    if(err)  {
@@ -1512,6 +1589,65 @@ app.get('/payment',function(req,res){
 				    }
 					
 				    callback(null,doc)
+
+				    
+			   
+			 	 })
+		    }
+		    ,
+		    //Pago por tatuador
+		    function(callback) {
+
+		    	var tat = []
+
+		        User.find({})
+		        	.populate('profile')
+		        	.exec(function(err,doc){
+		  	
+				    if(err)  {
+				      callback(err)
+				    }
+
+				    	
+				    
+				    doc.forEach(function(usr){
+
+				    	var myObj = new Object();
+				    	myObj.name = usr.displayName
+						
+						payment.find({'typepay': 0, 'createdFor': usr, '$where': 'this.date.toJSON().slice(0, 10) == "'+today+'"' })
+							//	.populate('appointment')
+							    .exec(function(err,pay){
+
+							   	if(err){
+				     			 callback(err)
+				    			}
+
+				  				var total = 0;
+
+				 				pay.forEach(function(pago){
+				
+							      total += pago.amount
+							
+							    })
+
+				    			myObj.payment = total
+							   	
+				 				tat.push(myObj)
+
+							   })
+						
+						
+				
+				    })
+
+				    
+
+
+					
+				    callback(null,tat)
+
+				    
 			   
 			 	 })
 		    }
@@ -1526,9 +1662,13 @@ app.get('/payment',function(req,res){
 			    if (results == null || results[0] == null) {
 			        return res.send(400);
 			    }
-			 
+			 	
+
+			    
+
 			    saldoTotalEntradas = results[0]
 				saldoTotalSalidas = results[1]
+				tatuadores = results[3]
 
 				saldoTotalCaja = saldoTotalEntradas - saldoTotalSalidas
 
@@ -1536,12 +1676,15 @@ app.get('/payment',function(req,res){
 				// console.log(saldoTotalSalidas)
 				// console.log(saldoTotalCaja)
 
+				console.log(tatuadores)
+
 
 			    res.render('caja',{
 			    	totalEntradas: saldoTotalEntradas,
 					totalCaja: saldoTotalCaja,
 					totalSalidas: saldoTotalSalidas,
 					entradas: results[2],
+					pagotatuadores: tatuadores,
 				})
 			}
 		)
@@ -1558,7 +1701,8 @@ app.post('/payment',function(req,res){
 		payment.create({
 			
 			createdBy: res.locals.user,
-			tipepay: req.body.tipoentrada, 
+			typepay: req.body.tipoentrada, 
+			typecharge: 1,	
 			amount: req.body.monto,
 			description: req.body.descripcion,
 
@@ -1567,6 +1711,8 @@ app.post('/payment',function(req,res){
 			{
 				return res.send(500, 'Internal Server Error')
 			}
+
+			console.log(sch.date.toDateString())
 		})
 		res.redirect('/payment')		
 	}
@@ -1615,7 +1761,7 @@ app.get('/todolist',function(req,res){
 					{
 						return res.send(404, 'Not found')
 					}
-					console.log(todos.createdBy)
+					
 
 					res.render('addtodolist',{
 						todos: todos,
@@ -1668,6 +1814,106 @@ app.post('/addtodolist',function(req,res){
 	}
 })
 
+app.get('/chargepayment/:uuid',function(req,res){
+
+	if(!res.locals.user)
+	{
+		res.redirect('/login')
+	}
+	else
+	{
+		Appointment.findOne({uuid: req.params.uuid})
+					.populate('createdBy')
+					.exec(function(err,appo){
+						if(err){
+							return res.send(500,'Internal Server Error')
+						}
+
+						var anticipo = appo.advancepay
+
+						var total = appo.price 
+
+						var comi = appo.comi
+
+						if(appo.createdBy.username === 'jazz')
+						{
+							var totalentrada = total - anticipo;
+
+							payment.create({
+								date: appo.dateStart,
+								createdBy: res.locals.user,
+								createdFor: appo.createdBy,
+								typepay: 1, //1=entrada  0=salida
+								typecharge: appo.typePay,
+								amount: totalentrada,
+								description: 'Pago Tatuaje de ' + appo.createdBy.displayName,
+
+							},function(err,doc){
+								if(err)
+								{
+									return res.send(500,'Internal Server Error');
+								}									
+							})
+
+						}
+						else if(comi > 0 && appo.createdBy.username != 'jazz')
+						{
+
+							var totalsalida = total * (comi / 100)
+							var totalentrada = 0
+
+							if (anticipo > 0) {
+
+								totalentrada = (total - anticipo) - totalsalida
+								
+							}
+							else
+							{
+								totalentrada = total - totalsalida
+							}
+
+							payment.create({
+								date: appo.dateStart,
+								createdBy: res.locals.user,
+								createdFor: appo.createdBy,
+								typepay: 0, //1=entrada  0=salida
+								typecharge: appo.typePay,
+								amount: totalsalida,
+								description: 'Pago Comisión de Tatuaje para ' + appo.createdBy.displayName,
+
+							},function(err,doc){
+								if(err)
+								{
+									return res.send(500,'Internal Server Error');
+								}
+									
+							})
+
+							payment.create({
+								date: appo.dateStart,
+								createdBy: res.locals.user,
+								createdFor: appo.createdBy,
+								typepay: 1, //1=entrada  0=salida
+								typecharge: appo.typePay,
+								amount: totalentrada,
+								description: 'Cobro cita de ' + appo.createdBy.displayName,
+
+							},function(err,doc){
+								if(err)
+								{
+									return res.send(500,'Internal Server Error');
+								}
+									
+							})
+						}
+
+						res.end('Pago Registrado Satisfactoriamente')
+					})
+
+	}
+
+})
+
 function instalador()
 {
 	Profile.create({
@@ -1700,36 +1946,36 @@ function instalador()
 			})
 	})	
 
-	Profile.create({
+	// Profile.create({
 
-			profilename: 'User',
-			profilecode: 002
+	// 		profilename: 'User',
+	// 		profilecode: 002
 			
-			},function(err,doc){
-				if(err)
-				{
-					return res.send(500,'Internal Server Error');
-				}
+	// 		},function(err,doc){
+	// 			if(err)
+	// 			{
+	// 				return res.send(500,'Internal Server Error');
+	// 			}
 
-				bcrypt.hash('57762636', null/* Salt */, null, function(err, hashedPassword) {
-			if(err){
-				return res.send(500, 'Internal Server Error')
-			}
+	// 			bcrypt.hash('57762636', null/* Salt */, null, function(err, hashedPassword) {
+	// 		if(err){
+	// 			return res.send(500, 'Internal Server Error')
+	// 		}
 			
-				User.create({
-					username: 'tat1',
-					password: hashedPassword,
-					displayName: 'Tatuador 1',
-					profile: doc,
-					email: '',
-				}, function(err, doc){
-					if(err){
-						return res.send(500, 'Internal Server Error')
-					}
-				}) 		
-			})
+	// 			User.create({
+	// 				username: 'tat1',
+	// 				password: hashedPassword,
+	// 				displayName: 'Tatuador 1',
+	// 				profile: doc,
+	// 				email: '',
+	// 			}, function(err, doc){
+	// 				if(err){
+	// 					return res.send(500, 'Internal Server Error')
+	// 				}
+	// 			}) 		
+	// 		})
 				
-	})
+	// })
 
 	Status.create({
 
@@ -1775,6 +2021,6 @@ app.listen(3000, function () {
 // Cities.collection.remove();
 // Profile.collection.remove();
 
-    // instalador()
+     // instalador()
 	console.log('Example app listening on port 3000! ' + new Date())
 })

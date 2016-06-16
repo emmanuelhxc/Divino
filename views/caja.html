@@ -69,7 +69,8 @@
                         <tr>
                             <th>Descripción</th>
                             <th>Monto</th> 
-                            <th>Tipo</th> 
+                            <th>Tipo de Movimiento</th> 
+                            <th>Tipo de Pago</th> 
                         </tr>
                     </thead>
                     <tbody>
@@ -83,7 +84,7 @@
                                     ${{ d.amount }}
                                 </b>
                             </td>
-                            {% if d.tipepay === 1 %}
+                            {% if d.typepay === 1 %}
                                 <td>
                                     Entrada
                                 </td>
@@ -92,13 +93,23 @@
                                     Salida
                                 </td>
                             {% endif %}
+                            {% if d.typecharge === 1 %}
+                                <td>
+                                    Efectivo
+                                </td>
+                            {% else %}
+                                <td>
+                                    Tarjeta
+                                </td>
+                            {% endif %}
                         </tr>
                      {% endfor %}
                      <tr>
                         <td></td>
                         <td style="color:red; font-size: 2em;">
-                            Total: <b> ${{ totalCaja }} </b>
+                            <!-- Total: <b> ${{ totalCaja }} </b> -->
                         </td>
+                        <td></td>
                         <td></td>
                      </tr>
                     </tbody>
@@ -116,33 +127,42 @@
                         <tr>
                             <th>Descripción</th>
                             <th>Monto</th> 
-                            <th></th>
+                            <th>Tipo Pago</th>
                         </tr>
                     </thead>
                     <tbody>
                        {% for d in entradas %}
                        <tr> 
-                            {% if d.tipepay === 1 %}
+                            {% if d.typepay === 1 %}
                                 <td>
                                    <i class="zmdi zmdi-dot-circle-alt zmdi-hc-fw"></i> {{ d.description }}
                                 </td>
                                 <td>
                                    <b> ${{ d.amount }} </b>
                                 </td>
-                                <td>
-                                </td>
-                            {% endif %}
+                                {% if d.typecharge === 1 %}
+                                    <td>
+                                        Efectivo
+                                    </td>
+                                {% else %}
+                                    <td>
+                                        Tarjeta
+                                    </td>
+                                {% endif %}
+                            {% endif %}                            
                         </tr>
                      {% endfor %}
                      <tr>
                             <td>
                                 
                             </td>
+                           
                             <td style="color:red; font-size: 2em;">
                             Total: <b> ${{ totalEntradas }} </b>
                             </td>
-                            <td></td>
-
+                            <td>
+                                
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -159,23 +179,31 @@
                         <tr>
                             <th>Descripción</th>
                             <th>Monto</th> 
-                            <th></th>
+                            <th>Tipo de Pago</th>
                             
                         </tr>
                     </thead>
                     <tbody>
                        {% for d in entradas %}
                        <tr> 
-                            {% if d.tipepay === 0 %}
+                            {% if d.typepay === 0 %}
                                 <td>
                                    <i class="zmdi zmdi-dot-circle-alt zmdi-hc-fw"></i> {{ d.description }}
                                 </td>
                                 <td>
                                     <b> ${{ d.amount }} </b>
                                 </td>
-                                <td>
-                                </td>
+                                {% if d.typecharge === 1 %}
+                                    <td>
+                                        Efectivo
+                                    </td>
+                                {% else %}
+                                    <td>
+                                        Tarjeta
+                                    </td>
+                                {% endif %}
                             {% endif %}
+                            
                         </tr>
                      {% endfor %}
                         <tr>
@@ -186,6 +214,44 @@
                               Total: <b> ${{ totalSalidas }} </b>
                             </td>
                             <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+         <div class="card">
+            <div class="card-header">
+                <h2><i class="zmdi zmdi-money-off zmdi-hc-fw"></i>Pago Tatuador x Día <small></small></h2>
+            </div>
+            
+            <div class="card-body table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Tatuador</th>
+                            <th>Monto</th>                             
+                        </tr>
+                    </thead>
+                    <tbody>
+                       {% for d in pagotatuadores %}
+                       <tr> 
+                            
+                            <td>
+                               <i class="zmdi zmdi-dot-circle-alt zmdi-hc-fw"></i> {{ d.name }}
+                            </td>
+                            <td>
+                                <b> ${{ d.payment }} </b>
+                            </td>
+                           
+                        </tr>
+                     {% endfor %}
+                        <tr>
+                            <td>
+                                
+                            </td>
+                           <td style="color:red; font-size: 2em;">
+                             <!--  Total: <b> ${{ totalSalidas }} </b> -->
+                            </td>
                         </tr>
                     </tbody>
                 </table>

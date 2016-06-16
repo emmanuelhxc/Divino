@@ -462,6 +462,7 @@ temporary rendered events).
 */
 
 .fc-row .fc-content-skeleton {
+
 	position: relative;
 	z-index: 4;
 	padding-bottom: 2px; /* matches the space above the events */
@@ -543,6 +544,7 @@ temporary rendered events).
 }
 
 .fc-event .fc-content {
+	cursor: pointer;
 	position: relative;
 	z-index: 2;
 }

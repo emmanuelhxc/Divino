@@ -122,6 +122,10 @@
                
                 <ul class="main-menu">
                 {% if user %}
+                    <li>
+                        <a href="/add-appointment"><i class="zmdi zmdi-calendar-note zmdi-hc-fw"></i> Agendar Cita </a>
+                    </li>
+                    
                  	{% if user.profile.profilecode === 1 %}
 		             	<li>
 		             		<a href="/addtat"><i class="zmdi zmdi-brush zmdi-hc-fw"></i>Agregar Tatuador</a>
@@ -136,9 +140,7 @@
                             <a href="/todolist"><i class="zmdi zmdi-assignment-check zmdi-hc-fw"></i> Pendientes </a>
                         </li>
                  	{% endif %}
-                 	<li>
-             			<a href="/add-appointment"><i class="zmdi zmdi-calendar-note zmdi-hc-fw"></i> Agendar Cita </a>
-		        	</li>
+                 	
                     <li>
                  		<a href="/log-out"><i class="zmdi zmdi-close zmdi-hc-fw"></i> Cerrar Sesión </a>
                  	</li>

@@ -22,42 +22,38 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Add an Event</h4>
+                    <h4 class="modal-title">Cita de Tatuaje <label id='tattoerName'> </label> </h4>
                 </div>
                 <div class="modal-body">
                     <form class="addEvent" role="form">
                         <div class="form-group">
-                            <label for="eventName">Event Name</label>
+                            <label for="eventName"></label>
                             <div class="fg-line">
-                                <input type="text" class="input-sm form-control" id="eventName" placeholder="eg: Sports day">
+                                <input type="text" class="input-sm form-control" id="eventName" >
                             </div>
                         </div>
-                        
                         <div class="form-group">
-                            <label for="eventName">Tag Color</label>
-                            <div class="event-tag">
-                                <span data-tag="bgm-teal" class="bgm-teal selected"></span>
-                                <span data-tag="bgm-red" class="bgm-red"></span>
-                                <span data-tag="bgm-pink" class="bgm-pink"></span>
-                                <span data-tag="bgm-blue" class="bgm-blue"></span>
-                                <span data-tag="bgm-lime" class="bgm-lime"></span>
-                                <span data-tag="bgm-green" class="bgm-green"></span>
-                                <span data-tag="bgm-cyan" class="bgm-cyan"></span>
-                                <span data-tag="bgm-orange" class="bgm-orange"></span>
-                                <span data-tag="bgm-purple" class="bgm-purple"></span>
-                                <span data-tag="bgm-gray" class="bgm-gray"></span>
-                                <span data-tag="bgm-black" class="bgm-black"></span>
+                            <label for="tattooDescription"></label>
+                            <div class="fg-line">
+                                <input type="text" class="input-sm form-control" id="tattooDescription" >
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="appointment"></label>
+                            <div class="fg-line">
+                                <input type="text" class="input-sm form-control" id="appointment" >
                             </div>
                         </div>
                         
-                        <input type="hidden" id="getStart" />
-                        <input type="hidden" id="getEnd" />
+            
+                        <!-- <input type="hidden" id="getStart" /> -->
+                        <!-- <input type="hidden" id="getEnd" /> -->
                     </form>
                 </div>
                 
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-link" id="addEvent">Add Event</button>
-                    <button type="button" class="btn btn-link" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary waves-effect" id="viewEvent">Ver Cita</button>
+                    <button type="button" class="btn btn-danger waves-effect" data-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>
@@ -117,20 +113,28 @@
 
    $(document).ready(function() {
 
+    // alert({{ JSON.stringify(dates) }})
+
     var event =  [ 
-            {% for d in dates %}
-            {
-                title : '{{d.title}}',
-                start :  new Date('{{d.start}}'),
-                id : '{{d.id}}',
-                allDay : true,
-                className : 'bgm-cyan'
-            },
+                {% for d in dates %}
+                    {
+                        title : '{{d.title}}',
+                        start :  new Date('{{d.start}}'),
+                        end: new Date('{{d.end}}'),
+                        id : '{{d.id}}',
+                        allDay : true,
+                        className : '{{d.className}}',
+                        customer : '{{d.customer}}',
+                        customerPhoneNumber : '{{d.customerPhoneNumber}}',
+                        customerMail: '{{d.customerMail}}',
+                        tattooerName : '{{d.tattooerName}}',
+                        titletattoo : '{{d.titletattoo}}',
+                        description : '{{d.description}}'
+                    },
 
-            {% endfor %}
-        ]
+                {% endfor %}
+            ]
 
-            
                 // var json = JSON.parse({{dates}});
 
                 var cId = $('#calendar'); //Change the name if you want. I'm also using thsi add button for more actions
@@ -152,31 +156,68 @@
                     //Add Events
                     events: event,
                      
-                    //On Day Select
-                    select: function(start, end, allDay) {
-                        $('#addNew-event').modal('show');   
-                        $('#addNew-event input:text').val('');
-                        $('#getStart').val(start);
-                        $('#getEnd').val(end);
-                        $('#fc-event').modal.show('')
-                        $('.fc-content').click(function(){
-                            alert('test')
-                        })
+                    //On Day Click
+                    dayClick: function(date, jsEvent, view) {
+                        
+                        // var clicked = moment(date.format('LL'))
+                        // var today = moment().format('LL')
+
+                        // // if(moment(date.format('LL')).isSameOrBefore(moment().format('LL')))
+                        // if(moment(clicked).isSameOrBefore(today))
+                        // {
+                        //     window.location.href = 'add-appointment/'
+                        // }
+                        // else
+                        // {
+
+                        // }
                     },
                      
-                    eventClick: function(calEvent, jsEvent, view) {
-                    
-                    window.location.href = 'appointment/' + calEvent.id; 
-                    // alert('Event: ' + calEvent.title);
-                    // alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
-                    // alert('View: ' + view.name);
+                    eventClick: function(event, jsEvent, view) {
 
-                    // // change the border color just for fun
-                    // $(this).css('border-color', 'red');
+                        
+                        
+                        
+                         if(!$('addNew-event').is(":visible"))
+                        {
+                            $('#addNew-event #eventName').val('Cliente: '+ event.customer + ' Telefono: ' + event.customerPhoneNumber + ' Email: ' + event.customerMail)
+                            $('#addNew-event #tattooDescription').val('Tatuaje: '+ event.titletattoo + ' Descripción: ' + event.description)
+                            // $('#addNew-event #appointment').val('Hora de Inicio: ' + event.start + ' Hora de Fin: ' + event.end)
+                            $('#viewEvent').data('guid',event.id)
 
-                     //$('#addNew-event').modal('show'); 
+                            $('#addNew-event').modal('show')
+                        }
 
-                }
+                        
+
+                    },
+
+                    viewRender: function(currentView){
+                        var minDate = moment(),
+                        maxDate = moment().add(6,'months');
+                        // Past
+                        if (minDate >= currentView.start && minDate <= currentView.end) {
+                            $(".fc-prev-button").prop('disabled', true); 
+                            $(".fc-prev-button").addClass('fc-state-disabled'); 
+                        }
+                        else {
+                            $(".fc-prev-button").removeClass('fc-state-disabled'); 
+                            $(".fc-prev-button").prop('disabled', false); 
+                        }
+                        // Future
+                        if (maxDate >= currentView.start && maxDate <= currentView.end) {
+                            $(".fc-next-button").prop('disabled', true); 
+                            $(".fc-next-button").addClass('fc-state-disabled'); 
+                        } else {
+                            $(".fc-next-button").removeClass('fc-state-disabled'); 
+                            $(".fc-next-button").prop('disabled', false); 
+                        }
+                    },
+
+                    eventMouseover: function( event, jsEvent, view ) { 
+
+                       
+                    },
                 });
 
                 //Create and ddd Action button with dropdown in Calendar header. 
@@ -215,28 +256,13 @@
                 })();
             
                 //Add new Event
-                $('body').on('click', '#addEvent', function(){
-                    var eventName = $('#eventName').val();
-                    var tagColor = $('.event-tag > span.selected').attr('data-tag');
+                $('body').on('click', '#viewEvent', function(){
                         
-                    if (eventName != '') {
-                        //Render Event
-                        $('#calendar').fullCalendar('renderEvent',{
-                            title: eventName,
-                            start: $('#getStart').val(),
-                            end:  $('#getEnd').val(),
-                            allDay: true,
-                            className: tagColor
-                            
-                        },true ); //Stick the event
-                        
-                        $('#addNew-event form')[0].reset()
-                        $('#addNew-event').modal('hide');
-                    }
-                    
-                    else {
-                        $('#eventName').closest('.form-group').addClass('has-error');
-                    }
+                        var id = $('#viewEvent').data('guid')
+                         
+                        window.location.href = 'appointment/' + id; 
+
+                   
                 });   
 
                 //Calendar views
