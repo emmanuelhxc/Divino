@@ -149,7 +149,7 @@
                             <span class="input-group-addon"><i class="zmdi zmdi-money-box"></i></span>
                             <div class="fg-line">
                                 <input type="text" name="comi" class="form-control input-lg">
-                                <label class="fg-label">Comisión</label>
+                                <label class="fg-label">Comisión al Tatuador</label>
                             </div>
                         </div>
                     </div> 
@@ -387,11 +387,11 @@
 
             if(!isNaN(valTotal)){
 
-                var cont = (valTotal + ((valTotal * 4.18).toFixed(2) / 100)).toFixed(2)
-                var tresmes = (valTotal + ((valTotal *  9.40).toFixed(2) / 100)).toFixed(2)
-                var sesimes = (valTotal + ((valTotal * 12.88).toFixed(2) / 100)).toFixed(2)
-                var nuevemes = (valTotal + ((valTotal * 15.66).toFixed(2) / 100)).toFixed(2)
-                var docemes = (valTotal + ((valTotal * 18.04).toFixed(2) / 100)).toFixed(2)
+                var cont = (valTotal + ((valTotal * (4.18 + 3.5)).toFixed(2) / 100)).toFixed(2)
+                var tresmes = (valTotal + ((valTotal *  (9.40 + 3.5)).toFixed(2) / 100)).toFixed(2)
+                var sesimes = (valTotal + ((valTotal * (12.88 + 3.5)).toFixed(2) / 100)).toFixed(2)
+                var nuevemes = (valTotal + ((valTotal * (15.66 + 3.5)).toFixed(2) / 100)).toFixed(2)
+                var docemes = (valTotal + ((valTotal * (18.04 + 3.5)).toFixed(2) / 100)).toFixed(2)
 
 
                 $('#lblcontado').text('$ ' + cont)

@@ -362,8 +362,13 @@
             context: document.body
         }).done(function(err,res) {
                 //Success Message
+
+                if(err)
+                {
+                    swal('Pago <b>NO</b> Registrado!', res, 'Pagos')
+                }
            
-                swal('Pago Registrado!', res, 'success')
+                swal('Pago Registrado!', res, 'Pagos')
             
             });
     })

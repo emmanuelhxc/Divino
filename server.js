@@ -267,6 +267,8 @@ app.use(function (req, res, next) {
 
 app.get('/',function (req, res) {
 
+
+	
 	
 	if(!res.locals.user)
 	{
@@ -1533,14 +1535,17 @@ app.get('/payment',function(req,res){
 		var saldoTotalEntradas = 0
 		var saldoTotalSalidas = 0
 
+		// console.log('fecha de hoy ' + today)
+
 		async.parallel([
 		 
 		    //entradas
 		    function(callback) {
+		        // payment.find({'typepay': 1 })
 		        payment.find({'typepay': 1 , '$where': 'this.date.toJSON().slice(0, 10) == "'+ today +'"'  })
 		        		.exec(function(err,doc){
 
-		  	
+		  		
 				    if(err)  {
 				      callback(err)
 				    }
@@ -1550,7 +1555,7 @@ app.get('/payment',function(req,res){
 
 				      total += pay.amount;
 				     
-				     
+				    // console.log('filtro del where '+pay.date.toJSON().slice(0, 10) ) 
 				    })
 
 				    callback(null,total)
@@ -1561,6 +1566,7 @@ app.get('/payment',function(req,res){
 		    //salidas
 		    function(callback) {
 		        payment.find({'typepay': 0, '$where': 'this.date.toJSON().slice(0, 10) == "'+today+'"'})
+		        // payment.find({'typepay': 0})
 		        	   .exec(function(err,doc){
 		  	
 				    if(err)  {
@@ -1589,9 +1595,6 @@ app.get('/payment',function(req,res){
 				    }
 					
 				    callback(null,doc)
-
-				    
-			   
 			 	 })
 		    }
 		    ,
@@ -1608,15 +1611,17 @@ app.get('/payment',function(req,res){
 				      callback(err)
 				    }
 
-				    	
-				    
 				    doc.forEach(function(usr){
+
+				    	// if(usr.username != 'jazz' && usr.username.profile.profilecode != 1)
+				    	if(usr.username != 'jazz' && usr.username != 'Admin')
+				    	{
 
 				    	var myObj = new Object();
 				    	myObj.name = usr.displayName
 						
+						// payment.find({'typepay': 0, 'createdFor': usr})
 						payment.find({'typepay': 0, 'createdFor': usr, '$where': 'this.date.toJSON().slice(0, 10) == "'+today+'"' })
-							//	.populate('appointment')
 							    .exec(function(err,pay){
 
 							   	if(err){
@@ -1636,18 +1641,10 @@ app.get('/payment',function(req,res){
 				 				tat.push(myObj)
 
 							   })
-						
-						
-				
+						}
 				    })
 
-				    
-
-
-					
 				    callback(null,tat)
-
-				    
 			   
 			 	 })
 		    }
@@ -1664,20 +1661,13 @@ app.get('/payment',function(req,res){
 			    }
 			 	
 
-			    
-
 			    saldoTotalEntradas = results[0]
 				saldoTotalSalidas = results[1]
 				tatuadores = results[3]
 
-				saldoTotalCaja = saldoTotalEntradas - saldoTotalSalidas
-
-				// console.log(saldoTotalEntradas)
-				// console.log(saldoTotalSalidas)
-				// console.log(saldoTotalCaja)
-
 				console.log(tatuadores)
 
+				saldoTotalCaja = saldoTotalEntradas - saldoTotalSalidas
 
 			    res.render('caja',{
 			    	totalEntradas: saldoTotalEntradas,
@@ -1700,6 +1690,7 @@ app.post('/payment',function(req,res){
 	{
 		payment.create({
 			
+			date: new Date(),
 			createdBy: res.locals.user,
 			typepay: req.body.tipoentrada, 
 			typecharge: 1,	
@@ -1914,6 +1905,22 @@ app.get('/chargepayment/:uuid',function(req,res){
 
 })
 
+// app.get('/dayOfTheWeek/:date',function(req,res){
+
+// 	if(!res.locals.user)
+// 	{
+// 		res.redirect('/login')
+// 	}
+// 	else
+// 	{
+// 		// var numberDay = req.params.date
+// 		var numberDay = moment().day();
+
+// 		console.log(numberDay)
+// 	}
+
+// })
+
 function instalador()
 {
 	Profile.create({
@@ -1946,36 +1953,36 @@ function instalador()
 			})
 	})	
 
-	// Profile.create({
+	Profile.create({
 
-	// 		profilename: 'User',
-	// 		profilecode: 002
+			profilename: 'User',
+			profilecode: 002
 			
-	// 		},function(err,doc){
-	// 			if(err)
-	// 			{
-	// 				return res.send(500,'Internal Server Error');
-	// 			}
+			},function(err,doc){
+				if(err)
+				{
+					return res.send(500,'Internal Server Error');
+				}
 
-	// 			bcrypt.hash('57762636', null/* Salt */, null, function(err, hashedPassword) {
-	// 		if(err){
-	// 			return res.send(500, 'Internal Server Error')
-	// 		}
+			// 	bcrypt.hash('57762636', null/* Salt */, null, function(err, hashedPassword) {
+			// if(err){
+			// 	return res.send(500, 'Internal Server Error')
+			// }
 			
-	// 			User.create({
-	// 				username: 'tat1',
-	// 				password: hashedPassword,
-	// 				displayName: 'Tatuador 1',
-	// 				profile: doc,
-	// 				email: '',
-	// 			}, function(err, doc){
-	// 				if(err){
-	// 					return res.send(500, 'Internal Server Error')
-	// 				}
-	// 			}) 		
-	// 		})
+				// User.create({
+				// 	username: 'tat1',
+				// 	password: hashedPassword,
+				// 	displayName: 'Tatuador 1',
+				// 	profile: doc,
+				// 	email: '',
+				// }, function(err, doc){
+				// 	if(err){
+				// 		return res.send(500, 'Internal Server Error')
+				// 	}
+				// }) 		
+			// })
 				
-	// })
+	})
 
 	Status.create({
 
