@@ -1849,7 +1849,7 @@ app.get('/chargepayment/:uuid',function(req,res){
 						}
 						else if(comi > 0 && appo.createdBy.username != 'jazz')
 						{
-
+							console.log('entro')
 							var totalsalida = total * (comi / 100)
 							var totalentrada = 0
 
@@ -1862,6 +1862,8 @@ app.get('/chargepayment/:uuid',function(req,res){
 							{
 								totalentrada = total - totalsalida
 							}
+
+
 
 							payment.create({
 								date: appo.dateStart,
@@ -1877,6 +1879,13 @@ app.get('/chargepayment/:uuid',function(req,res){
 								{
 									return res.send(500,'Internal Server Error');
 								}
+
+								if (doc){
+
+									console.log('creo  comision')	
+								}
+
+								
 									
 							})
 
@@ -1894,6 +1903,11 @@ app.get('/chargepayment/:uuid',function(req,res){
 								{
 									return res.send(500,'Internal Server Error');
 								}
+
+								if(doc){
+									console.log('creo cobro de cita')	
+								}
+								
 									
 							})
 						}
@@ -1964,23 +1978,23 @@ function instalador()
 					return res.send(500,'Internal Server Error');
 				}
 
-			// 	bcrypt.hash('57762636', null/* Salt */, null, function(err, hashedPassword) {
-			// if(err){
-			// 	return res.send(500, 'Internal Server Error')
-			// }
+				bcrypt.hash('jazztattoo', null/* Salt */, null, function(err, hashedPassword) {
+			if(err){
+				return res.send(500, 'Internal Server Error')
+			}
 			
-				// User.create({
-				// 	username: 'tat1',
-				// 	password: hashedPassword,
-				// 	displayName: 'Tatuador 1',
-				// 	profile: doc,
-				// 	email: '',
-				// }, function(err, doc){
-				// 	if(err){
-				// 		return res.send(500, 'Internal Server Error')
-				// 	}
-				// }) 		
-			// })
+				User.create({
+					username: 'jazz',
+					password: hashedPassword,
+					displayName: 'Jazz',
+					profile: doc,
+					email: '',
+				}, function(err, doc){
+					if(err){
+						return res.send(500, 'Internal Server Error')
+					}
+				}) 		
+			})
 				
 	})
 
@@ -2028,6 +2042,6 @@ app.listen(3000, function () {
 // Cities.collection.remove();
 // Profile.collection.remove();
 
-    // instalador()
+    instalador()
 	console.log('Example app listening on port 3000! ' + new Date())
 })
